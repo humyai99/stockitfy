@@ -1,60 +1,75 @@
 /* ===================================
    Stockify Pro AI - Real-time Dashboard
-   Minimalist Black & White Theme - Thai
+   Premium Gradient Dark Theme - Thai
    =================================== */
 
 /* CSS Variables */
 :root {
-    /* Colors - Black & White Theme */
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #111111;
-    --bg-tertiary: #1a1a1a;
-    --bg-card: #161616;
-    --bg-card-hover: #1f1f1f;
+    /* Colors - Premium Gradient Theme */
+    --bg-primary: #050508;
+    --bg-secondary: #0a0a0f;
+    --bg-tertiary: #111118;
+    --bg-card: rgba(18, 18, 25, 0.9);
+    --bg-card-hover: rgba(25, 25, 35, 0.95);
     --bg-glass: rgba(255, 255, 255, 0.03);
+    --bg-gradient: linear-gradient(180deg, #0a0a15 0%, #050508 50%, #08080f 100%);
 
     --text-primary: #ffffff;
-    --text-secondary: #b0b0b0;
-    --text-muted: #707070;
+    --text-secondary: #a0a0b0;
+    --text-muted: #606070;
     --text: #ffffff;
 
-    --accent-primary: #ffffff;
-    --accent-secondary: #e0e0e0;
-    --accent-gradient: linear-gradient(135deg, #ffffff, #c0c0c0);
-    --primary: #ffffff;
-    --primary-light: #f0f0f0;
+    /* Accent Colors - Premium Purple/Blue */
+    --accent-primary: #8b5cf6;
+    --accent-secondary: #6366f1;
+    --accent-tertiary: #3b82f6;
+    --accent-gradient: linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6);
+    --primary: #8b5cf6;
+    --primary-light: #a78bfa;
 
-    --positive: #00d26a;
-    --positive-dim: rgba(0, 210, 106, 0.15);
-    --positive-bright: #00ff88;
+    /* Status Colors */
+    --positive: #10b981;
+    --positive-dim: rgba(16, 185, 129, 0.15);
+    --positive-bright: #34d399;
+    --positive-glow: rgba(16, 185, 129, 0.3);
 
-    --negative: #ff4757;
-    --negative-dim: rgba(255, 71, 87, 0.15);
-    --negative-bright: #ff6b7a;
+    --negative: #ef4444;
+    --negative-dim: rgba(239, 68, 68, 0.15);
+    --negative-bright: #f87171;
+    --negative-glow: rgba(239, 68, 68, 0.3);
 
     --warning: #f59e0b;
     --warning-dim: rgba(245, 158, 11, 0.15);
 
-    --neutral: #808080;
-    --neutral-dim: rgba(128, 128, 128, 0.15);
+    --neutral: #6b7280;
+    --neutral-dim: rgba(107, 114, 128, 0.15);
 
-    --border-color: rgba(255, 255, 255, 0.1);
-    --border-hover: rgba(255, 255, 255, 0.2);
-    --border: rgba(255, 255, 255, 0.1);
-    --card-bg: #161616;
+    /* Border & Cards */
+    --border-color: rgba(255, 255, 255, 0.06);
+    --border-hover: rgba(139, 92, 246, 0.4);
+    --border: rgba(255, 255, 255, 0.08);
+    --card-bg: rgba(18, 18, 25, 0.9);
+    --card-glow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --card-hover-glow: 0 12px 40px rgba(139, 92, 246, 0.15);
 
     /* Layout */
-    --header-height: 60px;
+    --header-height: 64px;
     --bottom-nav-height: 70px;
-    --ticker-height: 40px;
+    --ticker-height: 44px;
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 16px;
+    --border-radius-xl: 20px;
 
     /* Animation */
-    --transition-fast: 0.1s ease;
-    --transition-normal: 0.2s ease;
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Shadows */
-    --shadow-glow-positive: 0 0 20px rgba(0, 210, 106, 0.2);
-    --shadow-glow-negative: 0 0 20px rgba(255, 71, 87, 0.2);
+    --shadow-glow-positive: 0 0 30px rgba(16, 185, 129, 0.25);
+    --shadow-glow-negative: 0 0 30px rgba(239, 68, 68, 0.25);
+    --shadow-glow-accent: 0 0 40px rgba(139, 92, 246, 0.2);
 
     /* Fonts - Thai Support */
     --font-primary: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -77,19 +92,26 @@ html {
 }
 
 body {
-    font-family: 'Inter', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg-primary);
+    background-image:
+        radial-gradient(ellipse at top, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(99, 102, 241, 0.03) 0%, transparent 50%);
+    background-attachment: fixed;
     color: var(--text-primary);
-    line-height: 1.5;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     padding-bottom: var(--bottom-nav-height);
+    min-height: 100vh;
 }
 
 .container {
     max-width: 1440px;
     margin: 0 auto;
-    padding: 0 16px;
+    padding: 0 20px;
 }
 
 /* ===================================
@@ -153,8 +175,9 @@ body {
     left: 0;
     right: 0;
     height: var(--header-height);
-    background: rgba(10, 10, 15, 0.95);
-    backdrop-filter: blur(20px);
+    background: rgba(5, 5, 12, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border-bottom: 1px solid var(--border-color);
     z-index: 1000;
 }
@@ -170,57 +193,73 @@ body {
 .logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    text-decoration: none;
 }
 
 .logo-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
+    transition: transform var(--transition-normal);
+}
+
+.logo:hover .logo-icon {
+    transform: scale(1.05);
 }
 
 .logo-text {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
     letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, #a0a0b0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .ai-badge {
     display: inline-flex;
-    padding: 2px 6px;
+    padding: 3px 8px;
     background: var(--accent-gradient);
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 0.65rem;
     font-weight: 700;
+    color: white;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
 }
 
 .nav-tabs {
     display: flex;
     gap: 4px;
-    background: var(--bg-tertiary);
-    padding: 4px;
-    border-radius: 10px;
+    background: rgba(17, 17, 24, 0.6);
+    padding: 5px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
 }
 
 .nav-tab {
-    padding: 8px 16px;
+    padding: 10px 18px;
     background: none;
     border: none;
     color: var(--text-muted);
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    border-radius: 8px;
-    transition: all var(--transition-fast);
+    border-radius: 10px;
+    transition: all var(--transition-normal);
     text-decoration: none;
+    position: relative;
 }
 
 .nav-tab:hover {
-    color: var(--text-secondary);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .nav-tab.active {
-    background: var(--bg-card);
-    color: var(--text-primary);
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
 .header-right {
@@ -351,40 +390,57 @@ body {
 .dashboard-grid {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
 }
 
 .dashboard-section {
-    background: var(--bg-card);
+    background: rgba(18, 18, 25, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: var(--border-radius-xl);
+    padding: 24px;
+    box-shadow: var(--card-glow);
+    transition: all var(--transition-normal);
+}
+
+.dashboard-section:hover {
+    border-color: rgba(139, 92, 246, 0.15);
+    box-shadow: var(--card-hover-glow);
 }
 
 .section-header-inline {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .section-header-inline h2,
 .section-header-inline h3 {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 1rem;
+    gap: 10px;
+    font-size: 1.05rem;
     font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
 .section-icon {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
 }
 
 .view-all {
     font-size: 0.8rem;
     color: var(--accent-primary);
     cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+}
+
+.view-all:hover {
+    color: var(--accent-secondary);
+    text-decoration: underline;
 }
 
 /* Toggle Buttons */
@@ -392,28 +448,36 @@ body {
 .timeframe-toggle {
     display: flex;
     gap: 4px;
-    background: var(--bg-tertiary);
-    padding: 3px;
-    border-radius: 8px;
+    background: rgba(17, 17, 24, 0.7);
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
 }
 
 .toggle-btn,
 .tf-btn {
-    padding: 6px 12px;
+    padding: 8px 14px;
     background: none;
     border: none;
     color: var(--text-muted);
     font-size: 0.75rem;
     font-weight: 500;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-normal);
+}
+
+.toggle-btn:hover,
+.tf-btn:hover {
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .toggle-btn.active,
 .tf-btn.active {
-    background: var(--accent-primary);
+    background: var(--accent-gradient);
     color: white;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.25);
 }
 
 /* ===================================
@@ -421,22 +485,41 @@ body {
    =================================== */
 .indices-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
 }
 
 .index-card {
-    background: var(--bg-tertiary);
+    background: rgba(17, 17, 24, 0.8);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: var(--border-radius-lg);
+    padding: 20px;
     transition: all var(--transition-normal);
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.index-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: all var(--transition-normal);
 }
 
 .index-card:hover {
     border-color: var(--border-hover);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: var(--card-hover-glow);
+}
+
+.index-card:hover::before {
+    background: var(--accent-gradient);
 }
 
 .index-header {
