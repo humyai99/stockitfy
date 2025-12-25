@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="AI Stock Analyzer - วิเคราะห์เทรนด์หุ้น ทำนายราคา หาแนวรับ-แนวต้าน">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="วิเคราะห์ AI">
+
+    <title>วิเคราะห์หุ้น AI | Stockify Pro AI</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- TradingView Lightweight Charts -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/analyzer.css">
+</head>
+
+<body>
+    <!-- Connection Status Bar -->
+    <div id="connection-status" class="connection-status">
+        <span class="status-dot"></span>
+        <span class="status-text">Connecting...</span>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="index.html" class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="40" height="40" rx="10" fill="url(#logo-gradient)" />
+                            <path d="M12 28L16 20L20 24L28 12" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <circle cx="28" cy="12" r="3" fill="white" />
+                            <defs>
+                                <linearGradient id="logo-gradient" x1="0" y1="0" x2="40" y2="40"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#6366F1" />
+                                    <stop offset="1" stop-color="#8B5CF6" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <span class="logo-text">Stockify Pro <span class="ai-badge">AI</span></span>
+                </a>
+
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <div class="nav-tabs" id="nav-tabs">
+                    <a href="index.html" class="nav-tab">แดชบอร์ด</a>
+                    <a href="analyzer.html" class="nav-tab active">วิเคราะห์ AI</a>
+                    <a href="picks.html" class="nav-tab">หุ้นแนะนำ</a>
+                    <a href="watchlist.html" class="nav-tab">รายการจับตา</a>
+                    <a href="ai-insights.html" class="nav-tab">AI Insights</a>
+                </div>
+
+                <div class="header-right">
+                    <div class="market-status">
+                        <span id="market-status-dot" class="status-dot closed"></span>
+                        <span id="market-status-text">Market Closed</span>
+                    </div>
+                    <div class="last-update">
+                        <span class="update-label">Last Update</span>
+                        <span id="last-update-time" class="update-time">--:--:--</span>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content analyzer-main">
+        <div class="container">
+            <!-- Search Section -->
+            <section class="search-section">
+                <div class="search-container">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" id="stock-search" class="stock-search-input"
+                        placeholder="ค้นหาหุ้น เช่น AAPL, NVDA, TSLA, MSFT..." autocomplete="off">
+                    <div class="search-suggestions" id="search-suggestions"></div>
+                </div>
+                <div class="quick-picks">
+                    <span class="quick-label">ยอดนิยม:</span>
+                    <button class="quick-pick-btn" data-symbol="AAPL">AAPL</button>
+                    <button class="quick-pick-btn" data-symbol="NVDA">NVDA</button>
+                    <button class="quick-pick-btn" data-symbol="TSLA">TSLA</button>
+                    <button class="quick-pick-btn" data-symbol="MSFT">MSFT</button>
+                    <button class="quick-pick-btn" data-symbol="GOOGL">GOOGL</button>
+                    <button class="quick-pick-btn" data-symbol="META">META</button>
+                    <button class="quick-pick-btn" data-symbol="AMZN">AMZN</button>
+                </div>
+            </section>
+
+            <!-- Analysis Grid -->
+            <div class="analyzer-grid" id="analyzer-content">
+                <!-- Stock Header -->
+                <section class="stock-header-section" id="stock-header">
+                    <div class="stock-info-main">
+                        <div class="stock-identity">
+                            <h1 class="stock-symbol" id="display-symbol">-</h1>
+                            <span class="stock-name" id="display-name">เลือกหุ้นเพื่อเริ่มวิเคราะห์</span>
+                        </div>
+                        <div class="stock-price-main">
+                            <span class="current-price" id="current-price">-</span>
+                            <div class="price-change-badge" id="price-change-badge">
+                                <span class="change-value">-</span>
+                                <span class="change-percent">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stock-meta-row" id="stock-meta">
+                        <div class="meta-chip">
+                            <span class="meta-label">High</span>
+                            <span class="meta-value" id="day-high">-</span>
+                        </div>
+                        <div class="meta-chip">
+                            <span class="meta-label">Low</span>
+                            <span class="meta-value" id="day-low">-</span>
+                        </div>
+                        <div class="meta-chip">
+                            <span class="meta-label">Volume</span>
+                            <span class="meta-value" id="volume">-</span>
+                        </div>
+                        <div class="meta-chip">
+                            <span class="meta-label">Market Cap</span>
+                            <span class="meta-value" id="market-cap">-</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Chart Section -->
+                <section class="chart-section" id="chart-section">
+                    <div class="chart-header">
+                        <h2><span class="section-icon">📈</span> Price Chart</h2>
+                        <div class="chart-timeframes">
+                            <button class="tf-btn" data-tf="1D">1D</button>
+                            <button class="tf-btn" data-tf="1W">1W</button>
+                            <button class="tf-btn active" data-tf="1M">1M</button>
+                            <button class="tf-btn" data-tf="3M">3M</button>
+                            <button class="tf-btn" data-tf="6M">6M</button>
+                            <button class="tf-btn" data-tf="1Y">1Y</button>
+                        </div>
+                    </div>
+
+                    <!-- Chart Toolbar -->
+                    <div class="chart-toolbar">
+                        <!-- Chart Type Selector -->
+                        <div class="chart-control-group">
+                            <label>Chart Type:</label>
+                            <div class="chart-type-buttons">
+                                <button class="chart-type-btn active" data-type="candlestick" title="Candlestick">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <rect x="10" y="2" width="4" height="20" />
+                                        <rect x="8" y="6" width="8" height="12" fill="none" stroke="currentColor"
+                                            stroke-width="2" />
+                                    </svg>
+                                </button>
+                                <button class="chart-type-btn" data-type="line" title="Line">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 20L8 14L13 17L21 5" />
+                                    </svg>
+                                </button>
+                                <button class="chart-type-btn" data-type="area" title="Area">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
+                                        <path d="M3 20L8 14L13 17L21 5V20H3Z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Indicators Dropdown -->
+                        <div class="chart-control-group">
+                            <label>Indicators:</label>
+                            <div class="indicator-dropdown" id="indicator-dropdown">
+                                <button class="dropdown-trigger" id="indicator-trigger">
+                                    <span>Select Indicators</span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M6 9l6 6 6-6" />
+                                    </svg>
+                                </button>
+                                <div class="dropdown-menu" id="indicator-menu">
+                                    <label class="dropdown-item"><input type="checkbox" value="sma20"> SMA 20</label>
+                                    <label class="dropdown-item"><input type="checkbox" value="sma50"> SMA 50</label>
+                                    <label class="dropdown-item"><input type="checkbox" value="sma200"> SMA 200</label>
+                                    <hr>
+                                    <label class="dropdown-item"><input type="checkbox" value="ema9"> EMA 9</label>
+                                    <label class="dropdown-item"><input type="checkbox" value="ema21"> EMA 21</label>
+                                    <label class="dropdown-item"><input type="checkbox" value="ema50"> EMA 50</label>
+                                    <hr>
+                                    <label class="dropdown-item"><input type="checkbox" value="bb"> Bollinger
+                                        Bands</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Volume Toggle -->
+                        <div class="chart-control-group">
+                            <label>
+                                <input type="checkbox" id="volume-toggle" checked>
+                                Volume
+                            </label>
+                        </div>
+
+                        <!-- Fullscreen Button -->
+                        <button class="fullscreen-btn" id="fullscreen-btn" title="Fullscreen">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Main Chart Container -->
+                    <div class="chart-wrapper" id="chart-wrapper">
+                        <div class="chart-container" id="price-chart">
+                            <div class="chart-placeholder">
+                                <div class="placeholder-icon">📊</div>
+                                <p>เลือกหุ้นเพื่อแสดงกราฟ</p>
+                            </div>
+                        </div>
+                        <!-- Volume Chart (below main chart) -->
+                        <div class="volume-chart-container" id="volume-chart"></div>
+                    </div>
+
+                    <!-- Chart Legend -->
+                    <div class="chart-legend" id="chart-legend"></div>
+                </section>
+
+                <!-- AI Trend Analysis -->
+                <section class="trend-section">
+                    <div class="section-header-inline">
+                        <h2><span class="section-icon">🤖</span> AI Trend Analysis</h2>
+                        <span class="live-badge">
+                            <span class="pulse-dot"></span>
+                            Real-time
+                        </span>
+                    </div>
+
+                    <div class="trend-card" id="trend-card">
+                        <div class="trend-main">
+                            <div class="trend-indicator" id="trend-indicator">
+                                <div class="trend-icon">⏳</div>
+                                <div class="trend-text">
+                                    <span class="trend-label">เทรนด์ปัจจุบัน</span>
+                                    <span class="trend-direction" id="trend-direction">รอข้อมูล...</span>
+                                </div>
+                            </div>
+                            <div class="trend-strength">
+                                <span class="strength-label">ความแรง</span>
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="strength-fill" style="width: 0%"></div>
+                                </div>
+                                <span class="strength-value" id="strength-value">-%</span>
+                            </div>
+                        </div>
+                        <div class="trend-explanation" id="trend-explanation">
+                            <div class="explanation-header">
+                                <span class="explanation-icon">💡</span>
+                                <span>คำอธิบาย AI</span>
+                            </div>
+                            <p class="explanation-text" id="explanation-text">
+                                เลือกหุ้นเพื่อรับการวิเคราะห์จาก AI
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Price Prediction -->
+                <section class="prediction-section">
+                    <div class="section-header-inline">
+                        <h2><span class="section-icon">🔮</span> ทำนายราคา</h2>
+                        <span class="disclaimer-badge">⚠️ ไม่ใช่คำแนะนำลงทุน</span>
+                    </div>
+
+                    <div class="prediction-grid" id="prediction-grid">
+                        <!-- 7 Days -->
+                        <div class="prediction-card" data-days="7">
+                            <div class="pred-header">
+                                <span class="pred-days">7 วัน</span>
+                                <span class="pred-confidence" id="conf-7">-</span>
+                            </div>
+                            <div class="pred-range">
+                                <div class="range-bar">
+                                    <div class="range-min" id="min-7">-</div>
+                                    <div class="range-expected" id="exp-7">-</div>
+                                    <div class="range-max" id="max-7">-</div>
+                                </div>
+                                <div class="range-labels">
+                                    <span>ต่ำสุด</span>
+                                    <span>คาดการณ์</span>
+                                    <span>สูงสุด</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 14 Days -->
+                        <div class="prediction-card" data-days="14">
+                            <div class="pred-header">
+                                <span class="pred-days">14 วัน</span>
+                                <span class="pred-confidence" id="conf-14">-</span>
+                            </div>
+                            <div class="pred-range">
+                                <div class="range-bar">
+                                    <div class="range-min" id="min-14">-</div>
+                                    <div class="range-expected" id="exp-14">-</div>
+                                    <div class="range-max" id="max-14">-</div>
+                                </div>
+                                <div class="range-labels">
+                                    <span>ต่ำสุด</span>
+                                    <span>คาดการณ์</span>
+                                    <span>สูงสุด</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 30 Days -->
+                        <div class="prediction-card" data-days="30">
+                            <div class="pred-header">
+                                <span class="pred-days">30 วัน</span>
+                                <span class="pred-confidence" id="conf-30">-</span>
+                            </div>
+                            <div class="pred-range">
+                                <div class="range-bar">
+                                    <div class="range-min" id="min-30">-</div>
+                                    <div class="range-expected" id="exp-30">-</div>
+                                    <div class="range-max" id="max-30">-</div>
+                                </div>
+                                <div class="range-labels">
+                                    <span>ต่ำสุด</span>
+                                    <span>คาดการณ์</span>
+                                    <span>สูงสุด</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Support & Resistance Levels -->
+                <section class="levels-section">
+                    <div class="section-header-inline">
+                        <h2><span class="section-icon">🎯</span> แนวรับ-แนวต้าน</h2>
+                    </div>
+
+                    <div class="levels-container">
+                        <!-- Resistance Levels -->
+                        <div class="levels-column resistance-column">
+                            <div class="levels-title resistance">
+                                <span class="level-arrow">▲</span>
+                                แนวต้าน (Resistance)
+                            </div>
+                            <div class="levels-list" id="resistance-levels">
+                                <div class="level-item placeholder">R3: -</div>
+                                <div class="level-item placeholder">R2: -</div>
+                                <div class="level-item placeholder">R1: -</div>
+                            </div>
+                        </div>
+
+                        <!-- Current Price Marker -->
+                        <div class="current-price-marker">
+                            <div class="marker-line"></div>
+                            <div class="marker-price" id="marker-price">-</div>
+                            <div class="marker-line"></div>
+                        </div>
+
+                        <!-- Support Levels -->
+                        <div class="levels-column support-column">
+                            <div class="levels-title support">
+                                <span class="level-arrow">▼</span>
+                                แนวรับ (Support)
+                            </div>
+                            <div class="levels-list" id="support-levels">
+                                <div class="level-item placeholder">S1: -</div>
+                                <div class="level-item placeholder">S2: -</div>
+                                <div class="level-item placeholder">S3: -</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Technical Indicators -->
+                <section class="indicators-section">
+                    <div class="section-header-inline">
+                        <h2><span class="section-icon">📐</span> Technical Indicators</h2>
+                    </div>
+
+                    <div class="indicators-grid" id="indicators-grid">
+                        <div class="indicator-card">
+                            <div class="ind-header">
+                                <span class="ind-name">RSI (14)</span>
+                                <span class="ind-signal" id="rsi-signal">-</span>
+                            </div>
+                            <div class="ind-value" id="rsi-value">-</div>
+                            <div class="ind-gauge">
+                                <div class="gauge-zone oversold">Oversold</div>
+                                <div class="gauge-zone neutral">Neutral</div>
+                                <div class="gauge-zone overbought">Overbought</div>
+                                <div class="gauge-marker" id="rsi-marker" style="left: 50%"></div>
+                            </div>
+                        </div>
+
+                        <div class="indicator-card">
+                            <div class="ind-header">
+                                <span class="ind-name">MACD</span>
+                                <span class="ind-signal" id="macd-signal">-</span>
+                            </div>
+                            <div class="ind-values">
+                                <div class="ind-sub">
+                                    <span>MACD</span>
+                                    <span id="macd-line">-</span>
+                                </div>
+                                <div class="ind-sub">
+                                    <span>Signal</span>
+                                    <span id="signal-line">-</span>
+                                </div>
+                                <div class="ind-sub">
+                                    <span>Histogram</span>
+                                    <span id="macd-histogram">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="indicator-card">
+                            <div class="ind-header">
+                                <span class="ind-name">Moving Averages</span>
+                                <span class="ind-signal" id="ma-signal">-</span>
+                            </div>
+                            <div class="ind-values">
+                                <div class="ind-sub">
+                                    <span>EMA 9</span>
+                                    <span id="ema-9">-</span>
+                                </div>
+                                <div class="ind-sub">
+                                    <span>EMA 21</span>
+                                    <span id="ema-21">-</span>
+                                </div>
+                                <div class="ind-sub">
+                                    <span>EMA 50</span>
+                                    <span id="ema-50">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="indicator-card">
+                            <div class="ind-header">
+                                <span class="ind-name">ADX (14)</span>
+                                <span class="ind-signal" id="adx-signal">-</span>
+                            </div>
+                            <div class="ind-value" id="adx-value">-</div>
+                            <div class="ind-description" id="adx-description">
+                                ความแรงของเทรนด์
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AI Insights -->
+                <section class="insights-section">
+                    <div class="section-header-inline">
+                        <h2><span class="section-icon">🧠</span> AI Insights (ภาษาไทย)</h2>
+                    </div>
+
+                    <div class="insights-container" id="insights-container">
+                        <div class="insight-card summary">
+                            <div class="insight-header">
+                                <span class="insight-icon">📝</span>
+                                <span class="insight-title">สรุปภาพรวม</span>
+                            </div>
+                            <p class="insight-text" id="insight-summary">
+                                เลือกหุ้นเพื่อรับการวิเคราะห์...
+                            </p>
+                        </div>
+
+                        <div class="insight-card opportunity">
+                            <div class="insight-header">
+                                <span class="insight-icon">✨</span>
+                                <span class="insight-title">โอกาส</span>
+                            </div>
+                            <p class="insight-text" id="insight-opportunity">-</p>
+                        </div>
+
+                        <div class="insight-card risk">
+                            <div class="insight-header">
+                                <span class="insight-icon">⚠️</span>
+                                <span class="insight-title">ความเสี่ยง</span>
+                            </div>
+                            <p class="insight-text" id="insight-risk">-</p>
+                        </div>
+
+                        <div class="insight-card action">
+                            <div class="insight-header">
+                                <span class="insight-icon">🎯</span>
+                                <span class="insight-title">จุดสังเกต</span>
+                            </div>
+                            <ul class="insight-list" id="insight-actions">
+                                <li>รอข้อมูล...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="analyzer.html" class="bottom-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+            </svg>
+            <span>AI Analyzer</span>
+        </a>
+        <button class="bottom-nav-item" data-tab="news">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                    d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+                <path d="M18 14h-8" />
+                <path d="M15 18h-5" />
+                <path d="M10 6h8v4h-8V6Z" />
+            </svg>
+            <span>News</span>
+        </button>
+        <button class="bottom-nav-item" data-tab="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            <span>Settings</span>
+        </button>
+    </nav>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <span class="loading-text">กำลังวิเคราะห์...</span>
+        </div>
+    </div>
+
+    <script src="js/stock-data-service.js"></script>
+    <script src="js/ai-analyzer.js"></script>
+</body>
+
+</html>

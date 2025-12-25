@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Stockify Pro AI - แดชบอร์ดวิเคราะห์ตลาดหุ้นแบบเรียลไทม์">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Stockify">
+
+    <title>Stockify Pro AI | แดชบอร์ดตลาดหุ้น</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <!-- Fonts - Thai Support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Connection Status Bar -->
+    <div id="connection-status" class="connection-status">
+        <span class="status-dot"></span>
+        <span class="status-text">Connecting...</span>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="40" height="40" rx="10" fill="url(#logo-gradient)" />
+                            <path d="M12 28L16 20L20 24L28 12" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <circle cx="28" cy="12" r="3" fill="white" />
+                            <defs>
+                                <linearGradient id="logo-gradient" x1="0" y1="0" x2="40" y2="40"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#6366F1" />
+                                    <stop offset="1" stop-color="#8B5CF6" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <span class="logo-text">Stockify Pro <span class="ai-badge">AI</span></span>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <div class="nav-tabs" id="nav-tabs">
+                    <a href="index.html" class="nav-tab active">แดชบอร์ด</a>
+                    <a href="analyzer.html" class="nav-tab">วิเคราะห์ AI</a>
+                    <a href="picks.html" class="nav-tab">หุ้นแนะนำ</a>
+                    <a href="watchlist.html" class="nav-tab">รายการจับตา</a>
+                    <a href="ai-insights.html" class="nav-tab">AI Insights</a>
+                </div>
+
+                <div class="header-right">
+                    <div class="market-status">
+                        <span id="market-status-dot" class="status-dot closed"></span>
+                        <span id="market-status-text">Market Closed</span>
+                    </div>
+                    <div class="last-update">
+                        <span class="update-label">Last Update</span>
+                        <span id="last-update-time" class="update-time">--:--:--</span>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="main-content">
+        <div class="container">
+
+            <!-- Live Ticker Strip -->
+            <div class="ticker-strip">
+                <div class="ticker-content" id="ticker-content">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+
+                <!-- Major Indices Section -->
+                <section class="dashboard-section indices-section">
+                    <div class="section-header-inline">
+                        <h2>
+                            <span class="section-icon">📈</span>
+                            Major Indices
+                        </h2>
+                        <div class="sparkline-toggle">
+                            <button class="toggle-btn active" data-view="cards">Cards</button>
+                            <button class="toggle-btn" data-view="table">Table</button>
+                        </div>
+                    </div>
+
+                    <div class="indices-grid" id="indices-grid">
+                        <!-- S&P 500 -->
+                        <div class="index-card" data-symbol="SPY">
+                            <div class="index-header">
+                                <span class="index-flag">🇺🇸</span>
+                                <div class="index-info">
+                                    <h3>S&P 500</h3>
+                                    <span class="index-symbol">SPY</span>
+                                </div>
+                            </div>
+                            <div class="index-price">
+                                <span class="price-value" id="spy-price">6,051.09</span>
+                                <div class="price-change positive" id="spy-change">
+                                    <span class="change-value">+0.95%</span>
+                                    <span class="change-arrow">▲</span>
+                                </div>
+                            </div>
+                            <div class="mini-chart" id="spy-chart"></div>
+                            <div class="index-meta">
+                                <span class="meta-item">
+                                    <span class="meta-label">High</span>
+                                    <span class="meta-value" id="spy-high">6,099.97</span>
+                                </span>
+                                <span class="meta-item">
+                                    <span class="meta-label">Low</span>
+                                    <span class="meta-value" id="spy-low">6,032.38</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Nasdaq -->
+                        <div class="index-card" data-symbol="QQQ">
+                            <div class="index-header">
+                                <span class="index-flag">🇺🇸</span>
+                                <div class="index-info">
+                                    <h3>Nasdaq 100</h3>
+                                    <span class="index-symbol">QQQ</span>
+                                </div>
+                            </div>
+                            <div class="index-price">
+                                <span class="price-value" id="qqq-price">21,622.25</span>
+                                <div class="price-change positive" id="qqq-change">
+                                    <span class="change-value">+1.24%</span>
+                                    <span class="change-arrow">▲</span>
+                                </div>
+                            </div>
+                            <div class="mini-chart" id="qqq-chart"></div>
+                            <div class="index-meta">
+                                <span class="meta-item">
+                                    <span class="meta-label">High</span>
+                                    <span class="meta-value" id="qqq-high">21,780.00</span>
+                                </span>
+                                <span class="meta-item">
+                                    <span class="meta-label">Low</span>
+                                    <span class="meta-value" id="qqq-low">21,489.12</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Nikkei 225 -->
+                        <div class="index-card" data-symbol="NKY">
+                            <div class="index-header">
+                                <span class="index-flag">🇯🇵</span>
+                                <div class="index-info">
+                                    <h3>Nikkei 225</h3>
+                                    <span class="index-symbol">NKY</span>
+                                </div>
+                            </div>
+                            <div class="index-price">
+                                <span class="price-value" id="nky-price">39,470.44</span>
+                                <div class="price-change positive" id="nky-change">
+                                    <span class="change-value">+0.68%</span>
+                                    <span class="change-arrow">▲</span>
+                                </div>
+                            </div>
+                            <div class="mini-chart" id="nky-chart"></div>
+                            <div class="index-meta">
+                                <span class="meta-item">
+                                    <span class="meta-label">High</span>
+                                    <span class="meta-value">39,720.00</span>
+                                </span>
+                                <span class="meta-item">
+                                    <span class="meta-label">Low</span>
+                                    <span class="meta-value">39,280.55</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Euro Stoxx 50 -->
+                        <div class="index-card" data-symbol="STOXX">
+                            <div class="index-header">
+                                <span class="index-flag">🇪🇺</span>
+                                <div class="index-info">
+                                    <h3>Euro Stoxx 50</h3>
+                                    <span class="index-symbol">SX5E</span>
+                                </div>
+                            </div>
+                            <div class="index-price">
+                                <span class="price-value" id="stoxx-price">4,977.50</span>
+                                <div class="price-change negative" id="stoxx-change">
+                                    <span class="change-value">-0.32%</span>
+                                    <span class="change-arrow">▼</span>
+                                </div>
+                            </div>
+                            <div class="mini-chart" id="stoxx-chart"></div>
+                            <div class="index-meta">
+                                <span class="meta-item">
+                                    <span class="meta-label">High</span>
+                                    <span class="meta-value">5,012.40</span>
+                                </span>
+                                <span class="meta-item">
+                                    <span class="meta-label">Low</span>
+                                    <span class="meta-value">4,958.20</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- SET Index -->
+                        <div class="index-card" data-symbol="SET">
+                            <div class="index-header">
+                                <span class="index-flag">🇹🇭</span>
+                                <div class="index-info">
+                                    <h3>SET Index</h3>
+                                    <span class="index-symbol">SET</span>
+                                </div>
+                            </div>
+                            <div class="index-price">
+                                <span class="price-value" id="set-price">1,432.18</span>
+                                <div class="price-change positive" id="set-change">
+                                    <span class="change-value">+0.45%</span>
+                                    <span class="change-arrow">▲</span>
+                                </div>
+                            </div>
+                            <div class="mini-chart" id="set-chart"></div>
+                            <div class="index-meta">
+                                <span class="meta-item">
+                                    <span class="meta-label">High</span>
+                                    <span class="meta-value">1,440.25</span>
+                                </span>
+                                <span class="meta-item">
+                                    <span class="meta-label">Low</span>
+                                    <span class="meta-value">1,425.80</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- China A50 -->
+                        <div class="index-card" data-symbol="CNA50">
+                            <div class="index-header">
+                                <span class="index-flag">🇨🇳</span>
+                                <div class="index-info">
+                                    <h3>China A50</h3>
+                                    <span class="index-symbol">FTXIN9</span>
+                                </div>
+                            </div>
+                            <div class="index-price">
+                                <span class="price-value" id="cna50-price">13,458.30</span>
+                                <div class="price-change negative" id="cna50-change">
+                                    <span class="change-value">-0.85%</span>
+                                    <span class="change-arrow">▼</span>
+                                </div>
+                            </div>
+                            <div class="mini-chart" id="cna50-chart"></div>
+                            <div class="index-meta">
+                                <span class="meta-item">
+                                    <span class="meta-label">High</span>
+                                    <span class="meta-value">13,620.00</span>
+                                </span>
+                                <span class="meta-item">
+                                    <span class="meta-label">Low</span>
+                                    <span class="meta-value">13,410.50</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Fear & Greed / VIX Section -->
+                <section class="dashboard-section volatility-section">
+                    <div class="volatility-grid">
+                        <!-- VIX Card -->
+                        <div class="vix-live-card">
+                            <div class="vix-header">
+                                <div class="vix-title">
+                                    <span class="vix-icon">😨</span>
+                                    <h3>VIX Index</h3>
+                                </div>
+                                <span class="vix-label">Fear Gauge</span>
+                            </div>
+                            <div class="vix-display">
+                                <div class="vix-value-large" id="vix-value">13.81</div>
+                                <div class="vix-change positive" id="vix-change">
+                                    <span>-2.45%</span>
+                                </div>
+                            </div>
+                            <div class="vix-gauge">
+                                <div class="gauge-track">
+                                    <div class="gauge-fill" id="vix-gauge-fill" style="width: 20%"></div>
+                                    <div class="gauge-indicator" id="vix-indicator" style="left: 20%"></div>
+                                </div>
+                                <div class="gauge-labels">
+                                    <span>0</span>
+                                    <span>Low Fear</span>
+                                    <span>25</span>
+                                    <span>High Fear</span>
+                                    <span>50+</span>
+                                </div>
+                            </div>
+                            <div class="vix-status" id="vix-status">
+                                <span class="status-badge low">Extreme Greed</span>
+                                <span class="status-note">ตลาดมีความมั่นใจสูง - ระวัง Complacency</span>
+                            </div>
+                        </div>
+
+                        <!-- Fear & Greed Index -->
+                        <div class="fear-greed-card">
+                            <div class="fg-header">
+                                <h3>Fear & Greed Index</h3>
+                                <span class="fg-source">CNN Money</span>
+                            </div>
+                            <div class="fg-dial">
+                                <svg viewBox="0 0 200 120" class="fg-gauge">
+                                    <defs>
+                                        <linearGradient id="fg-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#ef4444" />
+                                            <stop offset="25%" style="stop-color:#f97316" />
+                                            <stop offset="50%" style="stop-color:#eab308" />
+                                            <stop offset="75%" style="stop-color:#84cc16" />
+                                            <stop offset="100%" style="stop-color:#22c55e" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#fg-gradient)"
+                                        stroke-width="12" stroke-linecap="round" />
+                                    <g id="fg-needle" transform="rotate(45, 100, 100)">
+                                        <line x1="100" y1="100" x2="100" y2="35" stroke="white" stroke-width="3"
+                                            stroke-linecap="round" />
+                                        <circle cx="100" cy="100" r="8" fill="white" />
+                                    </g>
+                                </svg>
+                                <div class="fg-value-display">
+                                    <span class="fg-number" id="fg-value">72</span>
+                                    <span class="fg-label" id="fg-label">Greed</span>
+                                </div>
+                            </div>
+                            <div class="fg-scale">
+                                <span>Extreme Fear</span>
+                                <span>Fear</span>
+                                <span>Neutral</span>
+                                <span>Greed</span>
+                                <span>Extreme Greed</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sector Performance -->
+                <section class="dashboard-section sector-section">
+                    <div class="section-header-inline">
+                        <h2>
+                            <span class="section-icon">🔄</span>
+                            Sector Performance
+                        </h2>
+                        <div class="timeframe-toggle">
+                            <button class="tf-btn active" data-tf="1D">1D</button>
+                            <button class="tf-btn" data-tf="1W">1W</button>
+                            <button class="tf-btn" data-tf="1M">1M</button>
+                            <button class="tf-btn" data-tf="YTD">YTD</button>
+                        </div>
+                    </div>
+
+                    <div class="sector-heatmap" id="sector-heatmap">
+                        <div class="sector-tile xlk positive-3" data-sector="Technology">
+                            <span class="tile-name">Technology</span>
+                            <span class="tile-symbol">XLK</span>
+                            <span class="tile-change">+2.15%</span>
+                        </div>
+                        <div class="sector-tile xlf positive-2" data-sector="Financials">
+                            <span class="tile-name">Financials</span>
+                            <span class="tile-symbol">XLF</span>
+                            <span class="tile-change">+1.42%</span>
+                        </div>
+                        <div class="sector-tile xlv positive-1" data-sector="Healthcare">
+                            <span class="tile-name">Healthcare</span>
+                            <span class="tile-symbol">XLV</span>
+                            <span class="tile-change">+0.85%</span>
+                        </div>
+                        <div class="sector-tile xli positive-1" data-sector="Industrials">
+                            <span class="tile-name">Industrials</span>
+                            <span class="tile-symbol">XLI</span>
+                            <span class="tile-change">+0.65%</span>
+                        </div>
+                        <div class="sector-tile xlc positive-2" data-sector="Communication">
+                            <span class="tile-name">Communication</span>
+                            <span class="tile-symbol">XLC</span>
+                            <span class="tile-change">+1.28%</span>
+                        </div>
+                        <div class="sector-tile xly positive-1" data-sector="Consumer Disc.">
+                            <span class="tile-name">Consumer Disc.</span>
+                            <span class="tile-symbol">XLY</span>
+                            <span class="tile-change">+0.72%</span>
+                        </div>
+                        <div class="sector-tile xlp neutral" data-sector="Consumer Staples">
+                            <span class="tile-name">Consumer Staples</span>
+                            <span class="tile-symbol">XLP</span>
+                            <span class="tile-change">-0.12%</span>
+                        </div>
+                        <div class="sector-tile xle negative-1" data-sector="Energy">
+                            <span class="tile-name">Energy</span>
+                            <span class="tile-symbol">XLE</span>
+                            <span class="tile-change">-0.58%</span>
+                        </div>
+                        <div class="sector-tile xlu negative-2" data-sector="Utilities">
+                            <span class="tile-name">Utilities</span>
+                            <span class="tile-symbol">XLU</span>
+                            <span class="tile-change">-1.05%</span>
+                        </div>
+                        <div class="sector-tile xlre negative-1" data-sector="Real Estate">
+                            <span class="tile-name">Real Estate</span>
+                            <span class="tile-symbol">XLRE</span>
+                            <span class="tile-change">-0.78%</span>
+                        </div>
+                        <div class="sector-tile xlb neutral" data-sector="Materials">
+                            <span class="tile-name">Materials</span>
+                            <span class="tile-symbol">XLB</span>
+                            <span class="tile-change">+0.15%</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AI Stock Picks Section -->
+                <section class="dashboard-section stock-picks-section">
+                    <div class="section-header-inline">
+                        <h2>
+                            <span class="section-icon">🎯</span>
+                            AI Stock Picks
+                            <span class="live-badge">LIVE</span>
+                        </h2>
+                        <div class="picks-controls">
+                            <button class="refresh-btn" id="refresh-picks">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                </svg>
+                            </button>
+                            <span class="picks-update-time" id="picks-update-time">--:--</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-picks-grid" id="stock-picks-grid">
+                        <!-- Loading State -->
+                        <div class="picks-loading" id="picks-loading">
+                            <div class="loading-spinner"></div>
+                            <span>กำลังวิเคราะห์หุ้น...</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Economic Calendar & News -->
+                <section class="dashboard-section news-section">
+                    <div class="news-grid">
+                        <!-- Economic Events -->
+                        <div class="events-card">
+                            <div class="section-header-inline">
+                                <h3>
+                                    <span class="section-icon">📅</span>
+                                    Economic Calendar
+                                </h3>
+                                <span class="view-all">View All →</span>
+                            </div>
+                            <div class="events-list" id="events-list">
+                                <div class="event-item high-impact">
+                                    <div class="event-time">
+                                        <span class="event-day">MON</span>
+                                        <span class="event-date">16 Dec</span>
+                                    </div>
+                                    <div class="event-content">
+                                        <span class="event-flag">🇺🇸</span>
+                                        <div class="event-details">
+                                            <span class="event-name">Manufacturing PMI</span>
+                                            <span class="event-forecast">Forecast: 49.5</span>
+                                        </div>
+                                    </div>
+                                    <span class="impact-badge high">High</span>
+                                </div>
+                                <div class="event-item high-impact">
+                                    <div class="event-time">
+                                        <span class="event-day">WED</span>
+                                        <span class="event-date">18 Dec</span>
+                                    </div>
+                                    <div class="event-content">
+                                        <span class="event-flag">🇺🇸</span>
+                                        <div class="event-details">
+                                            <span class="event-name">FOMC Rate Decision</span>
+                                            <span class="event-forecast">Forecast: 4.25-4.50%</span>
+                                        </div>
+                                    </div>
+                                    <span class="impact-badge high">High</span>
+                                </div>
+                                <div class="event-item medium-impact">
+                                    <div class="event-time">
+                                        <span class="event-day">THU</span>
+                                        <span class="event-date">19 Dec</span>
+                                    </div>
+                                    <div class="event-content">
+                                        <span class="event-flag">🇯🇵</span>
+                                        <div class="event-details">
+                                            <span class="event-name">BOJ Rate Decision</span>
+                                            <span class="event-forecast">Forecast: 0.25%</span>
+                                        </div>
+                                    </div>
+                                    <span class="impact-badge medium">Med</span>
+                                </div>
+                                <div class="event-item medium-impact">
+                                    <div class="event-time">
+                                        <span class="event-day">FRI</span>
+                                        <span class="event-date">20 Dec</span>
+                                    </div>
+                                    <div class="event-content">
+                                        <span class="event-flag">🇺🇸</span>
+                                        <div class="event-details">
+                                            <span class="event-name">Core PCE Price Index</span>
+                                            <span class="event-forecast">Forecast: 2.9%</span>
+                                        </div>
+                                    </div>
+                                    <span class="impact-badge medium">Med</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Market News -->
+                        <div class="news-card">
+                            <div class="section-header-inline">
+                                <h3>
+                                    <span class="section-icon">📰</span>
+                                    Market News
+                                </h3>
+                                <span class="view-all">View All →</span>
+                            </div>
+                            <div class="news-list" id="news-list">
+                                <div class="news-item">
+                                    <span class="news-time">2h ago</span>
+                                    <p class="news-headline">Fed คาดปรับลดดอกเบี้ยอีก 25bp ในการประชุมสัปดาห์หน้า</p>
+                                    <span class="news-source">Bloomberg</span>
+                                </div>
+                                <div class="news-item">
+                                    <span class="news-time">4h ago</span>
+                                    <p class="news-headline">Nvidia ทำสถิติ All-Time High หลัง AI Chip Demand พุ่ง</p>
+                                    <span class="news-source">Reuters</span>
+                                </div>
+                                <div class="news-item">
+                                    <span class="news-time">6h ago</span>
+                                    <p class="news-headline">China PBOC ส่งสัญญาณผ่อนคลายเพิ่มเติมในปี 2025</p>
+                                    <span class="news-source">CNBC</span>
+                                </div>
+                                <div class="news-item">
+                                    <span class="news-time">8h ago</span>
+                                    <p class="news-headline">SET Index ปรับขึ้นหลัง Fund Flow กลับเป็นบวก</p>
+                                    <span class="news-source">กรุงเทพธุรกิจ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Technical Levels & Outlook Summary -->
+                <section class="dashboard-section outlook-summary">
+                    <div class="outlook-grid">
+                        <!-- S&P 500 Technical -->
+                        <div class="technical-card">
+                            <div class="tech-header">
+                                <h3>S&P 500 Technical Levels</h3>
+                                <span class="signal-badge bullish">Bullish Trend</span>
+                            </div>
+                            <div class="levels-display">
+                                <div class="level-row resistance">
+                                    <span class="level-label">R2</span>
+                                    <div class="level-bar">
+                                        <div class="bar-value">6,200</div>
+                                    </div>
+                                    <span class="level-type">Major</span>
+                                </div>
+                                <div class="level-row resistance">
+                                    <span class="level-label">R1</span>
+                                    <div class="level-bar">
+                                        <div class="bar-value">6,100</div>
+                                    </div>
+                                    <span class="level-type">Near-term</span>
+                                </div>
+                                <div class="level-row current">
+                                    <span class="level-label">📍</span>
+                                    <div class="level-bar current-bar">
+                                        <div class="bar-value" id="sp500-current">6,051</div>
+                                    </div>
+                                    <span class="level-type">Current</span>
+                                </div>
+                                <div class="level-row support">
+                                    <span class="level-label">S1</span>
+                                    <div class="level-bar">
+                                        <div class="bar-value">5,850</div>
+                                    </div>
+                                    <span class="level-type">20-DMA</span>
+                                </div>
+                                <div class="level-row support">
+                                    <span class="level-label">S2</span>
+                                    <div class="level-bar">
+                                        <div class="bar-value">5,650</div>
+                                    </div>
+                                    <span class="level-type">50-DMA</span>
+                                </div>
+                            </div>
+                            <div class="indicators-row">
+                                <div class="indicator-chip bullish">
+                                    <span class="chip-label">RSI</span>
+                                    <span class="chip-value">68</span>
+                                </div>
+                                <div class="indicator-chip bullish">
+                                    <span class="chip-label">MACD</span>
+                                    <span class="chip-value">+</span>
+                                </div>
+                                <div class="indicator-chip bullish">
+                                    <span class="chip-label">Trend</span>
+                                    <span class="chip-value">↑</span>
+                                </div>
+                                <div class="indicator-chip warning">
+                                    <span class="chip-label">Breadth</span>
+                                    <span class="chip-value">⚠️</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Outlook Summary -->
+                        <div class="ai-outlook-card">
+                            <div class="ai-header">
+                                <div class="ai-icon">🤖</div>
+                                <div>
+                                    <h3>AI Market Outlook</h3>
+                                    <span class="ai-period">Q1 2025</span>
+                                </div>
+                            </div>
+                            <div class="outlook-ratings">
+                                <div class="rating-item">
+                                    <span class="rating-region">🇺🇸 US Equities</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill overweight" style="width: 85%"></div>
+                                    </div>
+                                    <span class="rating-label overweight">Overweight</span>
+                                </div>
+                                <div class="rating-item">
+                                    <span class="rating-region">🇯🇵 Japan</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill overweight" style="width: 70%"></div>
+                                    </div>
+                                    <span class="rating-label overweight">Mod. OW</span>
+                                </div>
+                                <div class="rating-item">
+                                    <span class="rating-region">🇪🇺 Europe</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill neutral" style="width: 50%"></div>
+                                    </div>
+                                    <span class="rating-label neutral">Neutral</span>
+                                </div>
+                                <div class="rating-item">
+                                    <span class="rating-region">🇹🇭 Thailand</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill neutral" style="width: 50%"></div>
+                                    </div>
+                                    <span class="rating-label neutral">Neutral</span>
+                                </div>
+                                <div class="rating-item">
+                                    <span class="rating-region">🇨🇳 China</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill underweight" style="width: 25%"></div>
+                                    </div>
+                                    <span class="rating-label underweight">Underweight</span>
+                                </div>
+                            </div>
+                            <div class="ai-recommendation">
+                                <span class="rec-icon">💡</span>
+                                <p>เน้น Large Cap Quality + AI Theme, ลดน้ำหนัก Utilities และ Real Estate</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+        <button class="bottom-nav-item active" data-tab="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            <span>Dashboard</span>
+        </button>
+        <a href="analyzer.html" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+            </svg>
+            <span>AI Analyzer</span>
+        </a>
+        <button class="bottom-nav-item" data-tab="news">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                    d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+                <path d="M18 14h-8" />
+                <path d="M15 18h-5" />
+                <path d="M10 6h8v4h-8V6Z" />
+            </svg>
+            <span>News</span>
+        </button>
+        <button class="bottom-nav-item" data-tab="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            <span>Settings</span>
+        </button>
+    </nav>
+
+    <!-- PWA Install Prompt -->
+    <div id="install-prompt" class="install-prompt hidden">
+        <div class="install-content">
+            <div class="install-icon">📱</div>
+            <div class="install-text">
+                <h4>Install Stockify Pro AI</h4>
+                <p>Add to home screen for the best experience</p>
+            </div>
+            <button id="install-btn" class="install-btn">Install</button>
+            <button id="install-dismiss" class="install-dismiss">×</button>
+        </div>
+    </div>
+
+    <script src="js/realtime.js"></script>
+</body>
+
+</html>

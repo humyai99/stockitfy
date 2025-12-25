@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockify Pro AI | รายการจับตา</title>
+    <meta name="description" content="AI Watchlist แจ้งเตือน และ Options Flow">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/watchlist.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-left">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">📈</span>
+                    <span class="logo-text">Stockify<span class="logo-accent">Pro</span></span>
+                </a>
+            </div>
+
+            <nav class="header-nav" id="nav-tabs">
+                <a href="index.html" class="nav-link">แดชบอร์ด</a>
+                <a href="analyzer.html" class="nav-link">วิเคราะห์ AI</a>
+                <a href="picks.html" class="nav-link">หุ้นแนะนำ</a>
+                <a href="watchlist.html" class="nav-link active">รายการจับตา</a>
+                <a href="ai-insights.html" class="nav-link">AI Insights</a>
+            </nav>
+
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="header-right">
+                <div class="connection-status" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+                <div class="header-time" id="header-time"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="watchlist-main">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>👁️ AI Watchlist & Options Flow</h1>
+                    <p class="page-subtitle">จับตาหุ้นพร้อมแจ้งเตือน + สัญญาณจาก Options</p>
+                </div>
+            </div>
+
+            <!-- Add Stock Section -->
+            <section class="add-stock-section">
+                <div class="add-stock-box">
+                    <div class="add-icon">➕</div>
+                    <input type="text" id="add-stock-input" class="add-stock-input"
+                        placeholder="เพิ่มหุ้นใน Watchlist เช่น AAPL, TSLA..." autocomplete="off">
+                    <button class="add-stock-btn" id="add-stock-btn">เพิ่ม</button>
+                </div>
+            </section>
+
+            <!-- Watchlist Section -->
+            <section class="watchlist-section">
+                <div class="section-header">
+                    <h2>📋 My Watchlist</h2>
+                    <span class="stock-count" id="stock-count">0 หุ้น</span>
+                </div>
+                <div class="watchlist-grid" id="watchlist-grid">
+                    <div class="empty-watchlist">
+                        <div class="empty-icon">📭</div>
+                        <p>ยังไม่มีหุ้นใน Watchlist</p>
+                        <p class="empty-hint">พิมพ์ชื่อหุ้นด้านบนแล้วกด "เพิ่ม"</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Options Flow Section -->
+            <section class="options-flow-section">
+                <div class="section-header">
+                    <h2>📊 Options Flow</h2>
+                    <button class="refresh-options-btn" id="refresh-options">
+                        🔄 รีเฟรช
+                    </button>
+                </div>
+
+                <!-- Market Sentiment -->
+                <div class="options-summary">
+                    <div class="sentiment-card bullish">
+                        <div class="sentiment-icon">🐂</div>
+                        <div class="sentiment-info">
+                            <div class="sentiment-label">Bullish Flow</div>
+                            <div class="sentiment-value" id="bullish-flow">$0M</div>
+                        </div>
+                    </div>
+                    <div class="sentiment-card bearish">
+                        <div class="sentiment-icon">🐻</div>
+                        <div class="sentiment-info">
+                            <div class="sentiment-label">Bearish Flow</div>
+                            <div class="sentiment-value" id="bearish-flow">$0M</div>
+                        </div>
+                    </div>
+                    <div class="sentiment-card neutral">
+                        <div class="sentiment-icon">📈</div>
+                        <div class="sentiment-info">
+                            <div class="sentiment-label">Put/Call Ratio</div>
+                            <div class="sentiment-value" id="put-call-ratio">-</div>
+                        </div>
+                    </div>
+                    <div class="sentiment-card">
+                        <div class="sentiment-icon">🔥</div>
+                        <div class="sentiment-info">
+                            <div class="sentiment-label">Market Mood</div>
+                            <div class="sentiment-value" id="market-mood-text">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unusual Activity Table -->
+                <div class="unusual-activity">
+                    <h3>🔥 Unusual Options Activity</h3>
+                    <div class="activity-table-wrapper">
+                        <table class="activity-table" id="options-table">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Type</th>
+                                    <th>Strike</th>
+                                    <th>Expiry</th>
+                                    <th>Volume</th>
+                                    <th>Premium</th>
+                                    <th>Signal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="options-tbody">
+                                <tr>
+                                    <td colspan="7" class="loading-row">กำลังโหลด...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alerts Section -->
+            <section class="alerts-section">
+                <div class="section-header">
+                    <h2>🔔 Active Alerts</h2>
+                    <span class="alert-count" id="alert-count">0 alerts</span>
+                </div>
+                <div class="alerts-list" id="alerts-list">
+                    <div class="no-alerts">
+                        <div class="no-alerts-icon">🔕</div>
+                        <p>ยังไม่มี Alerts</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Disclaimer -->
+            <div class="disclaimer">
+                <p>⚠️ <strong>คำเตือน:</strong> Options Flow data เป็น simulated data สำหรับ demo
+                    ไม่ใช่ข้อมูลจริง ผู้ลงทุนควรใช้ประกอบการตัดสินใจอย่างรอบคอบ</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/watchlist.js"></script>
+</body>
+
+</html>
