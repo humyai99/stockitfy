@@ -1757,6 +1757,241 @@ ${stockData ? `
     }
 });
 
+// ===================================
+// Dividend Calendar API
+// ===================================
+const DIVIDEND_STOCKS = [
+    'AAPL', 'MSFT', 'JNJ', 'PG', 'KO', 'PEP', 'VZ', 'T', 'XOM', 'CVX',
+    'JPM', 'BAC', 'WFC', 'O', 'ABBV', 'MRK', 'PFE', 'IBM', 'MCD', 'MMM'
+];
+
+app.get('/api/dividends', async (req, res) => {
+    try {
+        console.log('[API] Fetching dividend calendar...');
+        const cacheKey = 'dividends_data';
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ dividends: cached, source: 'cache' });
+        }
+
+        const dividends = [];
+        for (const symbol of DIVIDEND_STOCKS) {
+            try {
+                const quoteSummary = await yahooFinance.quoteSummary(symbol, {
+                    modules: ['summaryDetail', 'price', 'calendarEvents']
+                });
+
+                const summary = quoteSummary.summaryDetail || {};
+                const calendar = quoteSummary.calendarEvents || {};
+                const price = quoteSummary.price || {};
+
+                if (summary.dividendRate && summary.dividendRate > 0) {
+                    const exDate = calendar.exDividendDate || null;
+                    const payDate = calendar.dividendDate || null;
+
+                    dividends.push({
+                        symbol,
+                        name: price.shortName || price.longName || symbol,
+                        price: price.regularMarketPrice || 0,
+                        dividendRate: summary.dividendRate || 0,
+                        dividendYield: (summary.dividendYield || 0) * 100,
+                        exDividendDate: exDate ? new Date(exDate).toISOString().split('T')[0] : null,
+                        paymentDate: payDate ? new Date(payDate).toISOString().split('T')[0] : null,
+                        frequency: summary.dividendYield > 0.04 ? 'Quarterly' : 'Annual',
+                        daysUntilEx: exDate ? Math.ceil((new Date(exDate) - new Date()) / (1000 * 60 * 60 * 24)) : null
+                    });
+                }
+            } catch (e) {
+                // Skip if error
+            }
+        }
+
+        dividends.sort((a, b) => {
+            if (!a.exDividendDate) return 1;
+            if (!b.exDividendDate) return -1;
+            return new Date(a.exDividendDate) - new Date(b.exDividendDate);
+        });
+
+        setCache(cacheKey, dividends);
+        res.json({ dividends, source: 'api' });
+
+    } catch (error) {
+        console.error('[API] Dividends error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch dividend data' });
+    }
+});
+
+// ===================================
+// Sector ETF Flows API
+// ===================================
+const SECTOR_ETFS = [
+    { symbol: 'XLK', name: 'Technology', icon: '💻' },
+    { symbol: 'XLF', name: 'Financials', icon: '🏦' },
+    { symbol: 'XLV', name: 'Healthcare', icon: '🏥' },
+    { symbol: 'XLE', name: 'Energy', icon: '⚡' },
+    { symbol: 'XLI', name: 'Industrials', icon: '🏭' },
+    { symbol: 'XLY', name: 'Consumer Disc.', icon: '🛒' },
+    { symbol: 'XLP', name: 'Consumer Staples', icon: '🍎' },
+    { symbol: 'XLU', name: 'Utilities', icon: '💡' },
+    { symbol: 'XLB', name: 'Materials', icon: '⛏️' },
+    { symbol: 'XLRE', name: 'Real Estate', icon: '🏠' },
+    { symbol: 'XLC', name: 'Communication', icon: '📱' }
+];
+
+app.get('/api/sector-flows', async (req, res) => {
+    try {
+        console.log('[API] Fetching sector ETF flows...');
+        const cacheKey = 'sector_flows';
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ sectors: cached, source: 'cache' });
+        }
+
+        const sectors = [];
+        for (const etf of SECTOR_ETFS) {
+            try {
+                const quote = await yahooFinance.quote(etf.symbol);
+
+                const avgVolume = quote.averageDailyVolume3Month || quote.averageVolume || 1;
+                const currentVolume = quote.regularMarketVolume || 0;
+                const volumeRatio = currentVolume / avgVolume;
+
+                let flowSignal = 'neutral';
+                if (volumeRatio > 1.5 && quote.regularMarketChangePercent > 0) flowSignal = 'inflow';
+                else if (volumeRatio > 1.5 && quote.regularMarketChangePercent < 0) flowSignal = 'outflow';
+
+                sectors.push({
+                    symbol: etf.symbol,
+                    name: etf.name,
+                    icon: etf.icon,
+                    price: quote.regularMarketPrice || 0,
+                    change: quote.regularMarketChange || 0,
+                    changePercent: quote.regularMarketChangePercent || 0,
+                    volume: currentVolume,
+                    avgVolume: avgVolume,
+                    volumeRatio: Math.round(volumeRatio * 100),
+                    flowSignal,
+                    ytdReturn: quote.ytdReturn ? (quote.ytdReturn * 100).toFixed(2) : null,
+                    fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh || 0,
+                    fiftyTwoWeekLow: quote.fiftyTwoWeekLow || 0
+                });
+            } catch (e) {
+                // Skip if error
+            }
+        }
+
+        sectors.sort((a, b) => b.changePercent - a.changePercent);
+        setCache(cacheKey, sectors);
+        res.json({ sectors, source: 'api' });
+
+    } catch (error) {
+        console.error('[API] Sector flows error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch sector flows' });
+    }
+});
+
+// ===================================
+// 52-Week High/Low API
+// ===================================
+const TRACKED_STOCKS = [
+    'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'AMD', 'NFLX', 'INTC',
+    'ORCL', 'CRM', 'ADBE', 'CSCO', 'AVGO', 'QCOM', 'TXN', 'MU', 'AMAT', 'LRCX',
+    'JPM', 'BAC', 'WFC', 'GS', 'MS', 'V', 'MA', 'PYPL', 'AXP', 'BLK',
+    'JNJ', 'UNH', 'PFE', 'ABBV', 'MRK', 'LLY', 'TMO', 'ABT', 'DHR', 'BMY',
+    'XOM', 'CVX', 'COP', 'EOG', 'SLB', 'PXD', 'VLO', 'MPC', 'PSX', 'OXY'
+];
+
+app.get('/api/52week', async (req, res) => {
+    try {
+        console.log('[API] Fetching 52-week high/low data...');
+        const cacheKey = '52week_data';
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json(cached);
+        }
+
+        const nearHighs = [];
+        const nearLows = [];
+        const newHighs = [];
+        const newLows = [];
+
+        for (const symbol of TRACKED_STOCKS) {
+            try {
+                const quote = await yahooFinance.quote(symbol);
+
+                const price = quote.regularMarketPrice || 0;
+                const high52 = quote.fiftyTwoWeekHigh || 0;
+                const low52 = quote.fiftyTwoWeekLow || 0;
+
+                if (price === 0 || high52 === 0 || low52 === 0) continue;
+
+                const distFromHigh = ((high52 - price) / high52) * 100;
+                const distFromLow = ((price - low52) / low52) * 100;
+
+                const stockData = {
+                    symbol,
+                    name: quote.shortName || quote.longName || symbol,
+                    price,
+                    change: quote.regularMarketChange || 0,
+                    changePercent: quote.regularMarketChangePercent || 0,
+                    high52,
+                    low52,
+                    distFromHigh: distFromHigh.toFixed(2),
+                    distFromLow: distFromLow.toFixed(2),
+                    volume: quote.regularMarketVolume || 0,
+                    avgVolume: quote.averageDailyVolume3Month || 0
+                };
+
+                // New 52-week high (within 1%)
+                if (distFromHigh <= 1) {
+                    newHighs.push({ ...stockData, category: 'New High' });
+                }
+                // Near 52-week high (within 5%)
+                else if (distFromHigh <= 5) {
+                    nearHighs.push({ ...stockData, category: 'Near High' });
+                }
+
+                // New 52-week low (within 1%)
+                if (distFromLow <= 1) {
+                    newLows.push({ ...stockData, category: 'New Low' });
+                }
+                // Near 52-week low (within 5%)
+                else if (distFromLow <= 5) {
+                    nearLows.push({ ...stockData, category: 'Near Low' });
+                }
+
+            } catch (e) {
+                // Skip if error
+            }
+        }
+
+        // Sort by distance
+        nearHighs.sort((a, b) => parseFloat(a.distFromHigh) - parseFloat(b.distFromHigh));
+        nearLows.sort((a, b) => parseFloat(a.distFromLow) - parseFloat(b.distFromLow));
+
+        const result = {
+            newHighs,
+            nearHighs,
+            newLows,
+            nearLows,
+            summary: {
+                totalNewHighs: newHighs.length,
+                totalNearHighs: nearHighs.length,
+                totalNewLows: newLows.length,
+                totalNearLows: nearLows.length
+            },
+            source: 'api'
+        };
+
+        setCache(cacheKey, result);
+        res.json(result);
+
+    } catch (error) {
+        console.error('[API] 52-week error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch 52-week data' });
+    }
+});
+
 // Start broadcasting every 10 seconds
 setInterval(broadcastPrices, 10000);
 

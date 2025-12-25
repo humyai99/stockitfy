@@ -1,0 +1,514 @@
+/* ===================================
+   Sector ETF Flows - Premium Styles
+   =================================== */
+
+/* Main Layout */
+.sector-main {
+    padding-top: 90px;
+    min-height: 100vh;
+    background: linear-gradient(180deg, rgba(139, 92, 246, 0.03) 0%, transparent 30%);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.page-subtitle {
+    color: var(--text-muted);
+    margin: 0.25rem 0 0 0;
+    font-size: 0.9rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.refresh-btn {
+    padding: 0.6rem 1.25rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.refresh-btn:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.last-update {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Heatmap Section */
+.heatmap-section {
+    background: rgba(18, 18, 25, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.legend {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Heatmap Grid */
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+/* Sector Tile */
+.sector-tile {
+    padding: 1.25rem;
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.25s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.sector-tile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    filter: blur(20px);
+    opacity: 0.3;
+    z-index: -1;
+}
+
+.sector-tile:hover {
+    transform: scale(1.05);
+}
+
+.tile-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.tile-name {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.25rem;
+}
+
+.tile-symbol {
+    display: block;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: var(--font-mono);
+    margin-bottom: 0.5rem;
+}
+
+.tile-change {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+}
+
+.tile-volume {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 0.25rem;
+}
+
+/* Tile Colors */
+.sector-tile.positive-strong {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.sector-tile.positive-medium {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.6), rgba(5, 150, 105, 0.5));
+}
+
+.sector-tile.positive-weak {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.2));
+}
+
+.sector-tile.neutral {
+    background: rgba(17, 17, 24, 0.8);
+}
+
+.sector-tile.negative-weak {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.2));
+}
+
+.sector-tile.negative-medium {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.6), rgba(220, 38, 38, 0.5));
+}
+
+.sector-tile.negative-strong {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* Flow Badge */
+.flow-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.flow-badge.inflow {
+    background: rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+.flow-badge.outflow {
+    background: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.flow-badge.neutral {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+}
+
+/* Details Section */
+.details-section {
+    background: rgba(18, 18, 25, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.sector-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.sector-table th {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sector-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.sector-table tbody tr {
+    transition: background 0.2s;
+}
+
+.sector-table tbody tr:hover {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.sector-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sector-icon {
+    font-size: 1.25rem;
+}
+
+.positive {
+    color: #10b981;
+}
+
+.negative {
+    color: #ef4444;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--text-muted);
+    grid-column: 1 / -1;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #8b5cf6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-row td {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+/* Disclaimer */
+.disclaimer {
+    text-align: center;
+    padding: 1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.disclaimer strong {
+    color: #f59e0b;
+}
+
+/* Header Styles */
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 72px;
+    background: rgba(5, 5, 12, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    z-index: 1000;
+}
+
+.main-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 1400px;
+}
+
+.header-left .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.logo-icon {
+    font-size: 1.75rem;
+    transition: transform 0.25s;
+}
+
+.header-left .logo:hover .logo-icon {
+    transform: scale(1.05);
+}
+
+.logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, #a0a0b0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.logo-accent {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-nav {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(17, 17, 24, 0.6);
+    padding: 0.4rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.nav-link {
+    padding: 0.65rem 1.1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+    color: #fff;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+#connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+#connection-status .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+}
+
+/* Mobile Menu */
+.mobile-menu-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.mobile-menu-btn span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sector-main {
+        padding-top: 70px;
+    }
+
+    .main-header {
+        height: 60px;
+    }
+
+    .header-nav {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        padding: 1rem;
+        background: rgba(5, 5, 12, 0.98);
+        display: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .header-nav.open {
+        display: flex;
+    }
+
+    .nav-link {
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .header-right {
+        display: none;
+    }
+
+    .mobile-menu-btn {
+        display: flex;
+    }
+
+    .heatmap-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sector-table {
+        font-size: 0.8rem;
+    }
+
+    .sector-table th,
+    .sector-table td {
+        padding: 0.6rem 0.5rem;
+    }
+}
