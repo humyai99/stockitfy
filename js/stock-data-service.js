@@ -9,14 +9,15 @@
     // ===================================
     // Configuration
     // ===================================
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const CONFIG = {
-        // Backend API URL
-        API_BASE: window.location.port === '3001'
-            ? '' // Same origin when served from backend
-            : 'http://localhost:3001',
+        // Backend API URL - empty in production (same origin via Nginx proxy)
+        API_BASE: isLocalhost ? 'http://localhost:3001' : '',
 
         // WebSocket URL
-        WS_URL: 'ws://localhost:3001/ws',
+        WS_URL: isLocalhost
+            ? 'ws://localhost:3001/ws'
+            : `ws://${window.location.host}/ws`,
 
         // Cache duration in milliseconds
         CACHE_DURATION: 30 * 1000, // 30 seconds

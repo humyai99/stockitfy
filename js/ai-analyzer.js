@@ -577,7 +577,9 @@
             try {
                 const periodMap = { '1d': '1d', '1w': '1w', '1m': '1mo', '3m': '3mo', '6m': '6mo', '1y': '1y' };
                 const apiPeriod = periodMap[period] || '1mo';
-                const response = await fetch(`http://localhost:3001/api/ohlcv/${currentSymbol}?period=${apiPeriod}`);
+                const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                    ? 'http://localhost:3001' : '';
+                const response = await fetch(`${apiBase}/api/ohlcv/${currentSymbol}?period=${apiPeriod}`);
                 if (response.ok) {
                     const ohlcvResponse = await response.json();
                     ohlcvData = ohlcvResponse.data;
