@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockify Pro AI | Stock Screener</title>
+    <meta name="description" content="กรองหุ้นอัจฉริยะตามเงื่อนไข RSI, Volume, Price Change, P/E Ratio">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/screener.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-left">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">📈</span>
+                    <span class="logo-text">Stockify<span class="logo-accent">Pro</span></span>
+                </a>
+            </div>
+
+            <nav class="header-nav" id="nav-tabs">
+                <a href="index.html" class="nav-link">แดชบอร์ด</a>
+                <a href="analyzer.html" class="nav-link">วิเคราะห์ AI</a>
+                <a href="screener.html" class="nav-link active">Screener</a>
+                <a href="earnings.html" class="nav-link">Earnings</a>
+                <a href="news.html" class="nav-link">ข่าว</a>
+                <a href="chatbot.html" class="nav-link">AI Chat</a>
+            </nav>
+
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="header-right">
+                <div class="connection-status" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connected</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="screener-main">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>📊 Stock Screener</h1>
+                    <p class="page-subtitle">กรองหุ้นตามเงื่อนไขที่คุณต้องการ</p>
+                </div>
+                <div class="header-actions">
+                    <button class="refresh-btn" id="refresh-btn">🔄 รีเฟรช</button>
+                    <span class="last-update" id="last-update">อัปเดต: -</span>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <section class="filters-section">
+                <div class="filters-header">
+                    <h2>🎯 ตั้งค่าตัวกรอง</h2>
+                    <button class="reset-filters-btn" id="reset-filters">รีเซ็ตทั้งหมด</button>
+                </div>
+
+                <div class="filters-grid">
+                    <!-- Price Change Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">📈</span>
+                            <span class="filter-title">เปลี่ยนแปลง (%)</span>
+                        </div>
+                        <div class="filter-inputs">
+                            <div class="input-group">
+                                <label>ต่ำสุด</label>
+                                <input type="number" id="filter-change-min" placeholder="-10" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label>สูงสุด</label>
+                                <input type="number" id="filter-change-max" placeholder="10" step="0.1">
+                            </div>
+                        </div>
+                        <div class="filter-presets">
+                            <button class="preset-btn" data-filter="change" data-min="3" data-max="">ขึ้น >3%</button>
+                            <button class="preset-btn" data-filter="change" data-min="" data-max="-3">ลง <-3%< /button>
+                        </div>
+                    </div>
+
+                    <!-- RSI Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">📉</span>
+                            <span class="filter-title">RSI</span>
+                        </div>
+                        <div class="filter-inputs">
+                            <div class="input-group">
+                                <label>ต่ำสุด</label>
+                                <input type="number" id="filter-rsi-min" placeholder="0" min="0" max="100">
+                            </div>
+                            <div class="input-group">
+                                <label>สูงสุด</label>
+                                <input type="number" id="filter-rsi-max" placeholder="100" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="filter-presets">
+                            <button class="preset-btn" data-filter="rsi" data-min="" data-max="30">Oversold <30<
+                                    /button>
+                                    <button class="preset-btn" data-filter="rsi" data-min="70" data-max="">Overbought
+                                        >70</button>
+                        </div>
+                    </div>
+
+                    <!-- Volume Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">📊</span>
+                            <span class="filter-title">Volume (M)</span>
+                        </div>
+                        <div class="filter-inputs">
+                            <div class="input-group">
+                                <label>ต่ำสุด</label>
+                                <input type="number" id="filter-volume-min" placeholder="0" step="1">
+                            </div>
+                            <div class="input-group">
+                                <label>สูงสุด</label>
+                                <input type="number" id="filter-volume-max" placeholder="" step="1">
+                            </div>
+                        </div>
+                        <div class="filter-presets">
+                            <button class="preset-btn" data-filter="volume" data-min="10" data-max="">High >10M</button>
+                            <button class="preset-btn" data-filter="volume" data-min="50" data-max="">Very High
+                                >50M</button>
+                        </div>
+                    </div>
+
+                    <!-- Market Cap Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">💰</span>
+                            <span class="filter-title">Market Cap (B)</span>
+                        </div>
+                        <div class="filter-inputs">
+                            <div class="input-group">
+                                <label>ต่ำสุด</label>
+                                <input type="number" id="filter-mcap-min" placeholder="0" step="1">
+                            </div>
+                            <div class="input-group">
+                                <label>สูงสุด</label>
+                                <input type="number" id="filter-mcap-max" placeholder="" step="1">
+                            </div>
+                        </div>
+                        <div class="filter-presets">
+                            <button class="preset-btn" data-filter="mcap" data-min="100" data-max="">Large Cap
+                                >100B</button>
+                            <button class="preset-btn" data-filter="mcap" data-min="10" data-max="100">Mid Cap</button>
+                        </div>
+                    </div>
+
+                    <!-- P/E Ratio Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">📐</span>
+                            <span class="filter-title">P/E Ratio</span>
+                        </div>
+                        <div class="filter-inputs">
+                            <div class="input-group">
+                                <label>ต่ำสุด</label>
+                                <input type="number" id="filter-pe-min" placeholder="0" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label>สูงสุด</label>
+                                <input type="number" id="filter-pe-max" placeholder="" step="0.1">
+                            </div>
+                        </div>
+                        <div class="filter-presets">
+                            <button class="preset-btn" data-filter="pe" data-min="" data-max="15">Value <15< /button>
+                                    <button class="preset-btn" data-filter="pe" data-min="30" data-max="">Growth
+                                        >30</button>
+                        </div>
+                    </div>
+
+                    <!-- AI Score Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">🤖</span>
+                            <span class="filter-title">AI Score</span>
+                        </div>
+                        <div class="filter-inputs">
+                            <div class="input-group">
+                                <label>ต่ำสุด</label>
+                                <input type="number" id="filter-ai-min" placeholder="0" min="0" max="100">
+                            </div>
+                            <div class="input-group">
+                                <label>สูงสุด</label>
+                                <input type="number" id="filter-ai-max" placeholder="100" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="filter-presets">
+                            <button class="preset-btn" data-filter="ai" data-min="70" data-max="">Strong Buy
+                                >70</button>
+                            <button class="preset-btn" data-filter="ai" data-min="" data-max="30">Sell <30< /button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button class="apply-filters-btn" id="apply-filters">🔍 กรองหุ้น</button>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section">
+                <div class="results-header">
+                    <h2>📋 ผลลัพธ์</h2>
+                    <span class="results-count" id="results-count">0 หุ้น</span>
+                </div>
+
+                <div class="results-table-wrapper">
+                    <table class="results-table" id="results-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="symbol">Symbol</th>
+                                <th class="sortable" data-sort="name">ชื่อ</th>
+                                <th class="sortable" data-sort="price">ราคา</th>
+                                <th class="sortable" data-sort="change">เปลี่ยนแปลง</th>
+                                <th class="sortable" data-sort="rsi">RSI</th>
+                                <th class="sortable" data-sort="volume">Volume</th>
+                                <th class="sortable" data-sort="mcap">Market Cap</th>
+                                <th class="sortable" data-sort="pe">P/E</th>
+                                <th class="sortable" data-sort="ai">AI Score</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-tbody">
+                            <tr class="loading-row">
+                                <td colspan="10">
+                                    <div class="loading-spinner"></div>
+                                    <span>กำลังโหลดข้อมูล...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Disclaimer -->
+            <div class="disclaimer">
+                <p>⚠️ <strong>คำเตือน:</strong> ข้อมูลเป็นเพียงเครื่องมือช่วยวิเคราะห์ ไม่ใช่คำแนะนำการลงทุน</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/screener.js"></script>
+</body>
+
+</html>

@@ -1470,6 +1470,179 @@ app.get('/api/options-flow', async (req, res) => {
 });
 
 // ===================================
+// Stock Screener API
+// ===================================
+const SCREENER_SYMBOLS = [
+    'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK-B', 'JPM', 'V',
+    'JNJ', 'WMT', 'MA', 'PG', 'UNH', 'HD', 'DIS', 'NFLX', 'AMD', 'CRM',
+    'INTC', 'CSCO', 'VZ', 'KO', 'PEP', 'XOM', 'CVX', 'BA', 'NKE', 'MCD'
+];
+
+app.get('/api/screener', async (req, res) => {
+    try {
+        console.log('[API] Fetching screener data...');
+
+        const cacheKey = 'screener_data';
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ stocks: cached, source: 'cache' });
+        }
+
+        const stocks = [];
+
+        for (const symbol of SCREENER_SYMBOLS) {
+            try {
+                const quote = await yahooFinance.quote(symbol);
+
+                // Calculate RSI (simplified)
+                let rsi = 50;
+                const changePercent = quote.regularMarketChangePercent || 0;
+                if (changePercent > 0) {
+                    rsi = Math.min(70 + changePercent * 2, 95);
+                } else {
+                    rsi = Math.max(30 + changePercent * 2, 5);
+                }
+
+                // Calculate AI Score
+                const momentum = changePercent > 0 ? 15 : -10;
+                const rsiScore = rsi < 30 ? 20 : rsi > 70 ? -15 : 5;
+                const volumeScore = quote.regularMarketVolume > 50000000 ? 10 : 0;
+                const aiScore = Math.min(100, Math.max(0, 50 + momentum + rsiScore + volumeScore));
+
+                stocks.push({
+                    symbol: quote.symbol,
+                    name: quote.shortName || quote.longName || symbol,
+                    price: quote.regularMarketPrice,
+                    change: quote.regularMarketChange,
+                    changePercent: quote.regularMarketChangePercent,
+                    volume: quote.regularMarketVolume,
+                    marketCap: quote.marketCap,
+                    pe: quote.trailingPE,
+                    rsi: rsi,
+                    aiScore: Math.round(aiScore)
+                });
+            } catch (e) {
+                console.log(`[Screener] Skip ${symbol}:`, e.message);
+            }
+        }
+
+        setCache(cacheKey, stocks);
+        res.json({ stocks, source: 'api' });
+
+    } catch (error) {
+        console.error('[API] Screener error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch screener data' });
+    }
+});
+
+// ===================================
+// Earnings Calendar API
+// ===================================
+app.get('/api/earnings', async (req, res) => {
+    try {
+        console.log('[API] Fetching earnings calendar...');
+
+        const cacheKey = 'earnings_data';
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ earnings: cached, source: 'cache' });
+        }
+
+        const earningsData = [];
+        const now = new Date();
+
+        for (const symbol of SCREENER_SYMBOLS.slice(0, 15)) {
+            try {
+                const quoteSummary = await yahooFinance.quoteSummary(symbol, {
+                    modules: ['calendarEvents', 'earnings', 'price']
+                });
+
+                const calendar = quoteSummary.calendarEvents;
+                const earnings = quoteSummary.earnings;
+                const price = quoteSummary.price;
+
+                if (calendar?.earnings?.earningsDate?.[0]) {
+                    const earningsDate = new Date(calendar.earnings.earningsDate[0]);
+
+                    earningsData.push({
+                        symbol: symbol,
+                        name: price?.shortName || symbol,
+                        date: earningsDate.toISOString().split('T')[0],
+                        time: calendar.earnings.earningsDateEnd ? 'Before' : 'After',
+                        epsEstimate: earnings?.earningsChart?.currentQuarterEstimate || null,
+                        revenue: calendar.earnings.revenue?.avg || null,
+                        daysUntil: Math.ceil((earningsDate - now) / (1000 * 60 * 60 * 24))
+                    });
+                }
+            } catch (e) {
+                // Skip if no earnings data available
+            }
+        }
+
+        // Sort by date
+        earningsData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        setCache(cacheKey, earningsData);
+        res.json({ earnings: earningsData, source: 'api' });
+
+    } catch (error) {
+        console.error('[API] Earnings error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch earnings data' });
+    }
+});
+
+// ===================================
+// News Feed API
+// ===================================
+app.get('/api/news/:symbol?', async (req, res) => {
+    try {
+        const symbol = req.params.symbol || 'AAPL';
+        console.log(`[API] Fetching news for ${symbol}...`);
+
+        const cacheKey = `news_${symbol}`;
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ news: cached, source: 'cache' });
+        }
+
+        const searchResult = await yahooFinance.search(symbol, {
+            newsCount: 10
+        });
+
+        const news = (searchResult.news || []).map(item => {
+            // Simple sentiment analysis based on title keywords
+            let sentiment = 'neutral';
+            const title = (item.title || '').toLowerCase();
+
+            const bullishWords = ['surge', 'soar', 'jump', 'gain', 'rise', 'up', 'bull', 'beat', 'strong', 'growth', 'profit'];
+            const bearishWords = ['fall', 'drop', 'crash', 'decline', 'down', 'bear', 'miss', 'weak', 'loss', 'concern'];
+
+            const bullishCount = bullishWords.filter(w => title.includes(w)).length;
+            const bearishCount = bearishWords.filter(w => title.includes(w)).length;
+
+            if (bullishCount > bearishCount) sentiment = 'positive';
+            else if (bearishCount > bullishCount) sentiment = 'negative';
+
+            return {
+                title: item.title,
+                link: item.link,
+                publisher: item.publisher,
+                publishedAt: item.providerPublishTime,
+                thumbnail: item.thumbnail?.resolutions?.[0]?.url || null,
+                sentiment: sentiment
+            };
+        });
+
+        setCache(cacheKey, news);
+        res.json({ news, symbol, source: 'api' });
+
+    } catch (error) {
+        console.error('[API] News error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch news' });
+    }
+});
+
+// ===================================
 // AI Chatbot with OpenAI GPT
 // ===================================
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';

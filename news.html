@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockify Pro AI | ข่าวหุ้น</title>
+    <meta name="description" content="ข่าวหุ้นเรียลไทม์พร้อมการวิเคราะห์ Sentiment">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/news.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-left">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">📈</span>
+                    <span class="logo-text">Stockify<span class="logo-accent">Pro</span></span>
+                </a>
+            </div>
+
+            <nav class="header-nav" id="nav-tabs">
+                <a href="index.html" class="nav-link">แดชบอร์ด</a>
+                <a href="analyzer.html" class="nav-link">วิเคราะห์ AI</a>
+                <a href="screener.html" class="nav-link">Screener</a>
+                <a href="earnings.html" class="nav-link">Earnings</a>
+                <a href="news.html" class="nav-link active">ข่าว</a>
+                <a href="chatbot.html" class="nav-link">AI Chat</a>
+            </nav>
+
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="header-right">
+                <div class="connection-status" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connected</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="news-main">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>📰 ข่าวหุ้น</h1>
+                    <p class="page-subtitle">ข่าวล่าสุดพร้อมการวิเคราะห์ Sentiment</p>
+                </div>
+                <div class="header-actions">
+                    <button class="refresh-btn" id="refresh-btn">🔄 รีเฟรช</button>
+                </div>
+            </div>
+
+            <!-- Stock Selector -->
+            <section class="stock-selector">
+                <div class="selector-header">
+                    <h2>🎯 เลือกหุ้นที่ต้องการดูข่าว</h2>
+                </div>
+                <div class="stock-chips" id="stock-chips">
+                    <button class="stock-chip active" data-symbol="AAPL">AAPL</button>
+                    <button class="stock-chip" data-symbol="NVDA">NVDA</button>
+                    <button class="stock-chip" data-symbol="TSLA">TSLA</button>
+                    <button class="stock-chip" data-symbol="MSFT">MSFT</button>
+                    <button class="stock-chip" data-symbol="GOOGL">GOOGL</button>
+                    <button class="stock-chip" data-symbol="AMZN">AMZN</button>
+                    <button class="stock-chip" data-symbol="META">META</button>
+                    <button class="stock-chip" data-symbol="AMD">AMD</button>
+                </div>
+                <div class="custom-search">
+                    <input type="text" id="custom-symbol" placeholder="พิมพ์ Symbol อื่นๆ..." maxlength="5">
+                    <button class="search-btn" id="search-btn">ค้นหา</button>
+                </div>
+            </section>
+
+            <!-- Sentiment Summary -->
+            <section class="sentiment-summary">
+                <div class="sentiment-card positive">
+                    <span class="sentiment-icon">📈</span>
+                    <span class="sentiment-count" id="positive-count">0</span>
+                    <span class="sentiment-label">ข่าวบวก</span>
+                </div>
+                <div class="sentiment-card neutral">
+                    <span class="sentiment-icon">➖</span>
+                    <span class="sentiment-count" id="neutral-count">0</span>
+                    <span class="sentiment-label">ข่าวกลาง</span>
+                </div>
+                <div class="sentiment-card negative">
+                    <span class="sentiment-icon">📉</span>
+                    <span class="sentiment-count" id="negative-count">0</span>
+                    <span class="sentiment-label">ข่าวลบ</span>
+                </div>
+            </section>
+
+            <!-- News List -->
+            <section class="news-section">
+                <div class="section-header">
+                    <h2 id="news-title">📋 ข่าว AAPL</h2>
+                    <span class="last-update" id="last-update">อัปเดต: -</span>
+                </div>
+
+                <div class="news-grid" id="news-grid">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <span>กำลังโหลดข่าว...</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Disclaimer -->
+            <div class="disclaimer">
+                <p>⚠️ <strong>หมายเหตุ:</strong> การวิเคราะห์ Sentiment เป็นการวิเคราะห์อัตโนมัติ อาจไม่ถูกต้อง 100%</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/news.js"></script>
+</body>
+
+</html>
