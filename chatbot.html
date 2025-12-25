@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockify Pro AI | AI Chatbot</title>
+    <meta name="description" content="AI Chatbot วิเคราะห์หุ้นอัจฉริยะ ตอบทุกคำถามเกี่ยวกับการลงทุน">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/chatbot.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-left">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">📈</span>
+                    <span class="logo-text">Stockify<span class="logo-accent">Pro</span></span>
+                </a>
+            </div>
+
+            <nav class="header-nav" id="nav-tabs">
+                <a href="index.html" class="nav-link">แดชบอร์ด</a>
+                <a href="analyzer.html" class="nav-link">วิเคราะห์ AI</a>
+                <a href="picks.html" class="nav-link">หุ้นแนะนำ</a>
+                <a href="watchlist.html" class="nav-link">รายการจับตา</a>
+                <a href="ai-insights.html" class="nav-link">AI Insights</a>
+                <a href="chatbot.html" class="nav-link active">AI Chat</a>
+            </nav>
+
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="header-right">
+                <div class="connection-status" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">GPT-4 Ready</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Chat Container -->
+    <main class="chat-main">
+        <div class="chat-container">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-info">
+                    <h1>Stockify AI</h1>
+                    <p class="chat-subtitle">ผู้ช่วยวิเคราะห์หุ้นอัจฉริยะ • GPT-4o</p>
+                </div>
+                <div class="chat-status online">
+                    <span class="status-dot"></span>
+                    <span>Online</span>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome Message -->
+                <div class="message bot">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            <p>สวัสดีครับ! 👋 ผมคือ <strong>Stockify AI</strong></p>
+                            <p>ผมช่วยคุณได้เรื่อง:</p>
+                            <ul>
+                                <li>📊 วิเคราะห์หุ้นแบบเรียลไทม์ (NVDA, AAPL, TSLA...)</li>
+                                <li>📈 อธิบาย Technical Indicators</li>
+                                <li>🎯 แนะนำกลยุทธ์การลงทุน</li>
+                                <li>💡 ตอบทุกคำถามเกี่ยวกับตลาดหุ้น</li>
+                            </ul>
+                            <p>ลองถามมาได้เลยครับ! 🚀</p>
+                        </div>
+                        <div class="message-time">ตอนนี้</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions" id="quick-actions">
+                <button class="quick-btn" data-message="วิเคราะห์หุ้น NVDA ให้หน่อย">📊 วิเคราะห์ NVDA</button>
+                <button class="quick-btn" data-message="RSI คืออะไร อธิบายให้ฟัง">📈 RSI คืออะไร?</button>
+                <button class="quick-btn" data-message="แนะนำหุ้น Tech ที่น่าลงทุน">💡 หุ้น Tech น่าลงทุน</button>
+                <button class="quick-btn" data-message="ตลาดวันนี้เป็นยังไงบ้าง">🌐 สรุปตลาดวันนี้</button>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="ถามอะไรก็ได้เกี่ยวกับหุ้น..."
+                        autocomplete="off">
+                    <button class="send-btn" id="send-btn">
+                        <span class="send-icon">➤</span>
+                    </button>
+                </div>
+                <div class="chat-footer">
+                    <span>⚡ Powered by GPT-4o Mini</span>
+                    <span>•</span>
+                    <span>ข้อมูลหุ้น Real-time จาก Yahoo Finance</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/chatbot.js"></script>
+</body>
+
+</html>

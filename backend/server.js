@@ -1469,6 +1469,121 @@ app.get('/api/options-flow', async (req, res) => {
     }
 });
 
+// ===================================
+// AI Chatbot with OpenAI GPT
+// ===================================
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+
+// Chat endpoint
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { message, stockContext } = req.body;
+
+        if (!message) {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        console.log('[Chat] User:', message);
+
+        // Fetch stock data if a symbol is mentioned
+        let stockData = null;
+        const symbolMatch = message.match(/\b([A-Z]{1,5})\b/);
+        if (symbolMatch) {
+            const symbol = symbolMatch[1];
+            if (['AAPL', 'MSFT', 'GOOGL', 'NVDA', 'TSLA', 'META', 'AMZN', 'AMD', 'JPM', 'V', 'SPY', 'QQQ'].includes(symbol)) {
+                try {
+                    const quote = await yahooFinance.quote(symbol);
+                    stockData = {
+                        symbol: quote.symbol,
+                        price: quote.regularMarketPrice,
+                        change: quote.regularMarketChange,
+                        changePercent: quote.regularMarketChangePercent,
+                        high: quote.regularMarketDayHigh,
+                        low: quote.regularMarketDayLow,
+                        volume: quote.regularMarketVolume,
+                        marketCap: quote.marketCap,
+                        pe: quote.trailingPE,
+                        fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
+                        fiftyTwoWeekLow: quote.fiftyTwoWeekLow
+                    };
+                } catch (e) {
+                    console.log('[Chat] Could not fetch stock data for:', symbol);
+                }
+            }
+        }
+
+        // System prompt for stock AI assistant
+        const systemPrompt = `คุณคือ "Stockify AI" ผู้ช่วยวิเคราะห์หุ้นและการลงทุนขั้นสูง
+
+บทบาทของคุณ:
+- ตอบคำถามเกี่ยวกับหุ้น การลงทุน Technical Analysis
+- อธิบายตัวชี้วัดทางเทคนิค (RSI, MACD, Moving Average, Bollinger Bands)
+- วิเคราะห์แนวโน้มตลาดและหุ้นแต่ละตัว
+- ให้คำแนะนำการลงทุนเบื้องต้น (พร้อมเตือนความเสี่ยง)
+- ตอบเป็นภาษาไทย ใช้ภาษาเข้าใจง่าย
+
+รูปแบบการตอบ:
+- ใช้ emoji เพื่อให้อ่านง่าย (📈 📉 🎯 ⚠️ 💡)
+- แบ่งหัวข้อชัดเจน
+- ให้ข้อมูลเชิงลึก แต่กระชับ
+- เตือนเสมอว่าไม่ใช่คำแนะนำทางการเงินอย่างเป็นทางการ
+
+${stockData ? `
+ข้อมูลหุ้นล่าสุด ${stockData.symbol}:
+- ราคา: $${stockData.price?.toFixed(2)}
+- เปลี่ยนแปลง: ${stockData.changePercent?.toFixed(2)}%
+- High/Low วันนี้: $${stockData.high?.toFixed(2)} / $${stockData.low?.toFixed(2)}
+- Volume: ${(stockData.volume / 1000000)?.toFixed(2)}M
+- Market Cap: $${(stockData.marketCap / 1e9)?.toFixed(1)}B
+- P/E Ratio: ${stockData.pe?.toFixed(2)}
+- 52-Week High/Low: $${stockData.fiftyTwoWeekHigh?.toFixed(2)} / $${stockData.fiftyTwoWeekLow?.toFixed(2)}
+` : ''}`;
+
+        // Call OpenAI API
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    ...(stockContext || []),
+                    { role: 'user', content: message }
+                ],
+                temperature: 0.7,
+                max_tokens: 1000
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('[Chat] OpenAI error:', error);
+            throw new Error(error.error?.message || 'OpenAI API error');
+        }
+
+        const data = await response.json();
+        const reply = data.choices[0]?.message?.content || 'ขออภัย ไม่สามารถตอบได้ในขณะนี้';
+
+        console.log('[Chat] AI:', reply.substring(0, 100) + '...');
+
+        res.json({
+            reply,
+            stockData,
+            usage: data.usage
+        });
+
+    } catch (error) {
+        console.error('[Chat] Error:', error.message);
+        res.status(500).json({
+            error: 'Chat failed',
+            message: error.message
+        });
+    }
+});
+
 // Start broadcasting every 10 seconds
 setInterval(broadcastPrices, 10000);
 
