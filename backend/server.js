@@ -1998,6 +1998,310 @@ app.get('/api/sector-flows', async (req, res) => {
 });
 
 // ===================================
+// Top Movers API
+// ===================================
+app.get('/api/top-movers', async (req, res) => {
+    try {
+        const cacheKey = 'top_movers';
+
+        // Check cache
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ ...cached, fromCache: true });
+        }
+
+        console.log('[API] Fetching top movers...');
+
+        // Popular US stocks to scan
+        const symbols = [
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'TSLA', 'JPM',
+            'V', 'WMT', 'JNJ', 'PG', 'XOM', 'HD', 'MA', 'BAC', 'DIS', 'NFLX',
+            'ADBE', 'CRM', 'PYPL', 'INTC', 'AMD', 'CSCO', 'PEP', 'KO', 'MCD',
+            'NKE', 'COST', 'ABBV', 'TMO', 'AVGO', 'TXN', 'QCOM', 'UNH',
+            'SPY', 'QQQ', 'IWM', 'DIA', 'VTI', 'VOO'
+        ];
+
+        // Fetch all quotes
+        const quotes = await yahooFinance.quote(symbols);
+
+        // Process quotes
+        const stocks = (Array.isArray(quotes) ? quotes : [quotes]).filter(q => q).map(q => ({
+            symbol: q.symbol,
+            name: q.shortName || q.longName || q.symbol,
+            price: q.regularMarketPrice,
+            change: q.regularMarketChange,
+            changePercent: q.regularMarketChangePercent,
+            volume: q.regularMarketVolume,
+            avgVolume: q.averageDailyVolume3Month
+        }));
+
+        // Sort for top gainers (highest % change)
+        const gainers = [...stocks]
+            .filter(s => s.changePercent > 0)
+            .sort((a, b) => b.changePercent - a.changePercent)
+            .slice(0, 10);
+
+        // Sort for top losers (lowest % change)
+        const losers = [...stocks]
+            .filter(s => s.changePercent < 0)
+            .sort((a, b) => a.changePercent - b.changePercent)
+            .slice(0, 10);
+
+        // Sort for most active (highest volume)
+        const mostActive = [...stocks]
+            .sort((a, b) => b.volume - a.volume)
+            .slice(0, 10);
+
+        const result = {
+            gainers,
+            losers,
+            mostActive,
+            timestamp: Date.now()
+        };
+
+        setCache(cacheKey, result);
+        res.json(result);
+
+    } catch (error) {
+        console.error('[API] Top movers error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch top movers' });
+    }
+});
+
+// ===================================
+// AI Stock Recommendations API
+// ===================================
+app.get('/api/ai-recommendations', async (req, res) => {
+    try {
+        const cacheKey = 'ai_recommendations';
+
+        // Check cache
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ ...cached, fromCache: true });
+        }
+
+        console.log('[API] Generating AI recommendations...');
+
+        // Stocks to analyze
+        const symbols = [
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'TSLA', 'JPM',
+            'V', 'WMT', 'JNJ', 'PG', 'XOM', 'HD', 'MA', 'BAC', 'DIS', 'NFLX',
+            'ADBE', 'CRM', 'PYPL', 'INTC', 'AMD', 'CSCO', 'PEP', 'KO'
+        ];
+
+        const picks = [];
+
+        for (const symbol of symbols) {
+            try {
+                // Get historical data
+                const queryOptions = {
+                    period1: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+                    period2: new Date(),
+                    interval: '1d'
+                };
+
+                const chart = await yahooFinance.chart(symbol, queryOptions);
+
+                if (!chart || !chart.quotes || chart.quotes.length < 200) continue;
+
+                const quotes = chart.quotes;
+                const closes = quotes.map(q => q.close).filter(c => c != null);
+                const volumes = quotes.map(q => q.volume).filter(v => v != null);
+
+                if (closes.length < 200) continue;
+
+                // Calculate indicators
+                const rsi = calculateRSI(closes, 14);
+                const macdData = calculateMACD(closes);
+                const sma50 = calculateSMA(closes, 50);
+                const sma200 = calculateSMA(closes, 200);
+
+                const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
+                const currentVolume = volumes[volumes.length - 1];
+                const volumeRatio = currentVolume / avgVolume;
+
+                const currentPrice = closes[closes.length - 1];
+                const prevPrice = closes[closes.length - 2];
+                const change = currentPrice - prevPrice;
+                const changePercent = (change / prevPrice) * 100;
+
+                // Calculate confidence score
+                let confidence = 50;
+                const reasons = [];
+
+                // RSI scoring
+                if (rsi < 30) {
+                    confidence += 15;
+                    reasons.push('RSI Oversold - มีโอกาสเด้งกลับ');
+                } else if (rsi > 30 && rsi < 50) {
+                    confidence += 10;
+                    reasons.push('RSI กำลังฟื้นตัว');
+                }
+
+                // MACD scoring
+                if (macdData.signal === 'bullish') {
+                    confidence += 15;
+                    reasons.push('MACD Bullish - สัญญาณซื้อ');
+                }
+                if (macdData.crossover) {
+                    confidence += 10;
+                    reasons.push('MACD Crossover - สัญญาณเปลี่ยนเทรนด์');
+                }
+
+                // MA scoring
+                if (currentPrice > sma50) {
+                    confidence += 10;
+                    reasons.push('ราคาอยู่เหนือ MA50');
+                }
+                if (currentPrice > sma200) {
+                    confidence += 10;
+                    reasons.push('ราคาอยู่เหนือ MA200');
+                }
+                if (sma50 > sma200) {
+                    confidence += 5;
+                    reasons.push('Golden Cross (MA50 > MA200)');
+                }
+
+                // Volume scoring
+                if (volumeRatio > 1.5) {
+                    confidence += 5;
+                    reasons.push('Volume สูงกว่าค่าเฉลี่ย');
+                }
+
+                // Only include stocks with confidence >= 60
+                if (confidence >= 60) {
+                    picks.push({
+                        symbol,
+                        name: chart.meta?.shortName || symbol,
+                        price: currentPrice,
+                        change,
+                        changePercent,
+                        rsi,
+                        macdSignal: macdData.signal,
+                        sma50,
+                        sma200,
+                        volumeRatio,
+                        confidence: Math.min(confidence, 95),
+                        reason: reasons.slice(0, 3).join('. ')
+                    });
+                }
+
+            } catch (err) {
+                console.log(`[AI] Error for ${symbol}:`, err.message);
+            }
+        }
+
+        // Sort by confidence
+        picks.sort((a, b) => b.confidence - a.confidence);
+
+        const result = {
+            picks: picks.slice(0, 10),
+            count: picks.length,
+            timestamp: Date.now()
+        };
+
+        setCache(cacheKey, result);
+        res.json(result);
+
+    } catch (error) {
+        console.error('[API] AI recommendations error:', error.message);
+        res.status(500).json({ error: 'Failed to generate AI recommendations' });
+    }
+});
+
+// ===================================
+// AI Market Summary API
+// ===================================
+app.get('/api/market-summary', async (req, res) => {
+    try {
+        const cacheKey = 'market_summary';
+
+        // Check cache
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ ...cached, fromCache: true });
+        }
+
+        console.log('[API] Generating market summary...');
+
+        // Fetch major indices
+        const indices = ['^GSPC', '^DJI', '^IXIC', '^RUT', '^VIX'];
+        const quotes = await yahooFinance.quote(indices);
+
+        const indexData = {};
+        (Array.isArray(quotes) ? quotes : [quotes]).forEach(q => {
+            if (q) indexData[q.symbol] = q;
+        });
+
+        const sp500 = indexData['^GSPC'];
+        const dow = indexData['^DJI'];
+        const nasdaq = indexData['^IXIC'];
+        const russell = indexData['^RUT'];
+        const vix = indexData['^VIX'];
+
+        // Determine market sentiment
+        let sentiment = 'neutral';
+        let positiveCount = 0;
+        [sp500, dow, nasdaq, russell].forEach(idx => {
+            if (idx?.regularMarketChangePercent > 0) positiveCount++;
+        });
+
+        if (positiveCount >= 3) sentiment = 'bullish';
+        else if (positiveCount <= 1) sentiment = 'bearish';
+
+        // Generate summary points
+        const points = [];
+
+        if (sp500) {
+            const sp500Change = sp500.regularMarketChangePercent > 0 ? 'ขึ้น' : 'ลง';
+            points.push(`S&P 500 ${sp500Change} ${Math.abs(sp500.regularMarketChangePercent).toFixed(2)}%`);
+        }
+
+        if (nasdaq) {
+            const nasdaqChange = nasdaq.regularMarketChangePercent > 0 ? 'ขึ้น' : 'ลง';
+            points.push(`NASDAQ ${nasdaqChange} ${Math.abs(nasdaq.regularMarketChangePercent).toFixed(2)}%`);
+        }
+
+        if (vix) {
+            if (vix.regularMarketPrice > 25) {
+                points.push('⚠️ VIX สูง - ตลาดมีความผันผวน');
+            } else if (vix.regularMarketPrice < 15) {
+                points.push('✅ VIX ต่ำ - ตลาดสงบ');
+            }
+        }
+
+        // Add sentiment summary
+        if (sentiment === 'bullish') {
+            points.push('📈 บรรยากาศตลาดเป็นบวก');
+        } else if (sentiment === 'bearish') {
+            points.push('📉 บรรยากาศตลาดเป็นลบ');
+        } else {
+            points.push('➖ ตลาดเคลื่อนไหวแบบ Mixed');
+        }
+
+        const result = {
+            indices: {
+                sp500: sp500 ? { price: sp500.regularMarketPrice, change: sp500.regularMarketChangePercent } : null,
+                dow: dow ? { price: dow.regularMarketPrice, change: dow.regularMarketChangePercent } : null,
+                nasdaq: nasdaq ? { price: nasdaq.regularMarketPrice, change: nasdaq.regularMarketChangePercent } : null,
+                vix: vix ? { price: vix.regularMarketPrice, change: vix.regularMarketChangePercent } : null
+            },
+            sentiment,
+            points,
+            timestamp: Date.now()
+        };
+
+        setCache(cacheKey, result);
+        res.json(result);
+
+    } catch (error) {
+        console.error('[API] Market summary error:', error.message);
+        res.status(500).json({ error: 'Failed to generate market summary' });
+    }
+});
+
+// ===================================
 // 52-Week High/Low API
 // ===================================
 const TRACKED_STOCKS = [

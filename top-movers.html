@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stockify Pro AI | Global Markets</title>
-    <meta name="description" content="ติดตามตลาดหุ้นทั่วโลก - US, Europe, Asia">
+    <title>Stockify Pro AI | Top Movers</title>
+    <meta name="description" content="หุ้นขึ้น/ลงมากที่สุดวันนี้ - Top Gainers, Losers, Most Active">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
         rel="stylesheet">
 
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/global-markets.css">
+    <link rel="stylesheet" href="css/top-movers.css">
     <link rel="icon" type="image/png" href="favicon.png">
     <script src="js/theme.js"></script>
 </head>
@@ -32,13 +32,11 @@
 
             <nav class="header-nav" id="nav-tabs">
                 <a href="index.html" class="nav-link">แดชบอร์ด</a>
-                <a href="analyzer.html" class="nav-link">วิเคราะห์ AI</a>
+                <a href="top-movers.html" class="nav-link active">🏆 Movers</a>
+                <a href="global-markets.html" class="nav-link">🌍 Global</a>
+                <a href="technical.html" class="nav-link">📊 Technical</a>
                 <a href="ai-recommendations.html" class="nav-link">🤖 AI Picks</a>
                 <a href="screener.html" class="nav-link">Screener</a>
-                <a href="top-movers.html" class="nav-link">🏆 Movers</a>
-                <a href="global-markets.html" class="nav-link active">Global</a>
-                <a href="technical.html" class="nav-link">Technical</a>
-                <a href="dividend.html" class="nav-link">Dividend</a>
                 <a href="news.html" class="nav-link">ข่าว</a>
                 <a href="chatbot.html" class="nav-link">AI Chat</a>
             </nav>
@@ -60,13 +58,13 @@
     </header>
 
     <!-- Main Content -->
-    <main class="global-main">
+    <main class="movers-main">
         <div class="container">
             <!-- Page Header -->
             <div class="page-header">
                 <div class="page-title">
-                    <h1>🌍 Global Markets</h1>
-                    <p class="page-subtitle">ติดตามตลาดหุ้นทั่วโลกแบบ Real-time</p>
+                    <h1>🏆 Top Movers</h1>
+                    <p class="page-subtitle">หุ้นขึ้น/ลงมากที่สุดวันนี้</p>
                 </div>
                 <div class="header-actions">
                     <button class="refresh-btn" id="refresh-btn">🔄 รีเฟรช</button>
@@ -75,62 +73,37 @@
             </div>
 
             <!-- Market Summary -->
-            <section class="summary-section">
-                <div class="summary-card bullish" id="summary-bullish">
+            <section class="market-summary">
+                <div class="summary-card" id="market-status">
+                    <span class="summary-icon">🇺🇸</span>
+                    <span class="summary-label">US Market</span>
+                    <span class="summary-value" id="market-status-text">-</span>
+                </div>
+                <div class="summary-card bullish" id="gainers-count-card">
                     <span class="summary-icon">📈</span>
-                    <span class="summary-value" id="markets-up">-</span>
-                    <span class="summary-label">Markets Up</span>
+                    <span class="summary-label">Gainers</span>
+                    <span class="summary-value" id="gainers-count">-</span>
                 </div>
-                <div class="summary-card bearish" id="summary-bearish">
+                <div class="summary-card bearish" id="losers-count-card">
                     <span class="summary-icon">📉</span>
-                    <span class="summary-value" id="markets-down">-</span>
-                    <span class="summary-label">Markets Down</span>
-                </div>
-                <div class="summary-card" id="summary-time">
-                    <span class="summary-icon">🌐</span>
-                    <span class="summary-value" id="utc-time">-</span>
-                    <span class="summary-label">UTC Time</span>
+                    <span class="summary-label">Losers</span>
+                    <span class="summary-value" id="losers-count">-</span>
                 </div>
             </section>
 
-            <!-- Americas -->
-            <section class="region-section">
-                <div class="region-header">
-                    <h2>🇺🇸 Americas</h2>
-                    <span class="market-status" id="us-status">-</span>
-                </div>
-                <div class="indices-grid" id="americas-grid">
-                    <div class="loading-state">
-                        <div class="loading-spinner"></div>
-                        <span>กำลังโหลด...</span>
-                    </div>
-                </div>
-            </section>
+            <!-- Tabs -->
+            <div class="movers-tabs">
+                <button class="tab-btn active" data-tab="gainers">📈 Top Gainers</button>
+                <button class="tab-btn" data-tab="losers">📉 Top Losers</button>
+                <button class="tab-btn" data-tab="active">🔥 Most Active</button>
+            </div>
 
-            <!-- Europe -->
-            <section class="region-section">
-                <div class="region-header">
-                    <h2>🇪🇺 Europe</h2>
-                    <span class="market-status" id="eu-status">-</span>
-                </div>
-                <div class="indices-grid" id="europe-grid">
+            <!-- Movers Grid -->
+            <section class="movers-section">
+                <div class="movers-grid" id="movers-grid">
                     <div class="loading-state">
                         <div class="loading-spinner"></div>
-                        <span>กำลังโหลด...</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Asia Pacific -->
-            <section class="region-section">
-                <div class="region-header">
-                    <h2>🌏 Asia Pacific</h2>
-                    <span class="market-status" id="asia-status">-</span>
-                </div>
-                <div class="indices-grid" id="asia-grid">
-                    <div class="loading-state">
-                        <div class="loading-spinner"></div>
-                        <span>กำลังโหลด...</span>
+                        <span>กำลังโหลดข้อมูล...</span>
                     </div>
                 </div>
             </section>
@@ -142,7 +115,7 @@
         </div>
     </main>
 
-    <script src="js/global-markets.js"></script>
+    <script src="js/top-movers.js"></script>
 
     <!-- Bottom Mobile Navigation -->
     <nav class="bottom-nav">
@@ -151,19 +124,17 @@
                 <span class="nav-icon">📊</span>
                 <span>หน้าหลัก</span>
             </a>
-            <a href="top-movers.html" class="nav-link">🏆 Movers</a>
-                <a href="global-markets.html" class="bottom-nav-item active">
+            <a href="top-movers.html" class="bottom-nav-item active">
+                <span class="nav-icon">🏆</span>
+                <span>Movers</span>
+            </a>
+            <a href="global-markets.html" class="bottom-nav-item">
                 <span class="nav-icon">🌍</span>
                 <span>Global</span>
             </a>
-            <a href="ai-recommendations.html" class="nav-link">🤖 AI Picks</a>
-                <a href="screener.html" class="bottom-nav-item">
-                <span class="nav-icon">🔍</span>
-                <span>Screener</span>
-            </a>
-            <a href="technical.html" class="bottom-nav-item">
-                <span class="nav-icon">📈</span>
-                <span>Technical</span>
+            <a href="ai-recommendations.html" class="bottom-nav-item">
+                <span class="nav-icon">🤖</span>
+                <span>AI Picks</span>
             </a>
             <a href="chatbot.html" class="bottom-nav-item">
                 <span class="nav-icon">💬</span>
