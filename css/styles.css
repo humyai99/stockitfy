@@ -2046,3 +2046,76 @@ body {
         transform: scale(0.99);
     }
 }
+
+/* ===================================
+   Mobile Navigation Enhancement
+   =================================== */
+@media (max-width: 1024px) {
+
+    .nav-tabs,
+    .header-nav {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .nav-tabs::-webkit-scrollbar,
+    .header-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-tab,
+    .nav-link {
+        flex-shrink: 0;
+        white-space: nowrap;
+        font-size: 0.75rem;
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    header .container,
+    .main-header .container {
+        padding: 0 12px;
+    }
+
+    .logo-text {
+        font-size: 1rem;
+    }
+
+    .header-right {
+        display: none;
+    }
+
+    .mobile-menu-btn {
+        display: flex !important;
+    }
+
+    /* Mobile Menu Overlay */
+    .nav-tabs.open,
+    .header-nav.open {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        background: rgba(5, 5, 12, 0.98);
+        backdrop-filter: blur(20px);
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 999;
+        display: flex !important;
+        max-width: 100%;
+        overflow-x: visible;
+    }
+
+    .nav-tabs.open .nav-tab,
+    .header-nav.open .nav-link {
+        padding: 12px 16px;
+        text-align: center;
+        border-radius: 10px;
+    }
+}
