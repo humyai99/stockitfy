@@ -72,10 +72,97 @@
             });
         }
 
+        // AI Summary button
+        const aiSummaryBtn = document.getElementById('ai-summary-btn');
+        const closeSummaryBtn = document.getElementById('close-summary-btn');
+        const aiSummarySection = document.getElementById('ai-summary-section');
+
+        if (aiSummaryBtn) {
+            aiSummaryBtn.addEventListener('click', () => loadAISummary());
+        }
+
+        if (closeSummaryBtn && aiSummarySection) {
+            closeSummaryBtn.addEventListener('click', () => {
+                aiSummarySection.style.display = 'none';
+            });
+        }
+
         // Load initial data
         loadNews(currentSymbol);
 
         console.log('📰 News Feed initialized');
+    }
+
+    // ===================================
+    // Load AI Summary
+    // ===================================
+    async function loadAISummary() {
+        const aiSummarySection = document.getElementById('ai-summary-section');
+        const summaryContent = document.getElementById('summary-content');
+        const aiSummaryBtn = document.getElementById('ai-summary-btn');
+
+        // Show loading
+        aiSummarySection.style.display = 'block';
+        summaryContent.innerHTML = `
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <span>AI กำลังวิเคราะห์ข่าว...</span>
+            </div>
+        `;
+        aiSummaryBtn.disabled = true;
+
+        try {
+            const response = await fetch(`${API_BASE}/api/news/summarize/${currentSymbol}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to get AI summary');
+            }
+
+            const data = await response.json();
+            renderAISummary(data);
+
+        } catch (error) {
+            console.error('Error getting AI summary:', error);
+            summaryContent.innerHTML = `
+                <div class="summary-point">
+                    <span class="point-icon">⚠️</span>
+                    <span class="point-text">ไม่สามารถสร้างสรุปได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง</span>
+                </div>
+            `;
+        } finally {
+            aiSummaryBtn.disabled = false;
+        }
+    }
+
+    // ===================================
+    // Render AI Summary
+    // ===================================
+    function renderAISummary(data) {
+        const summaryContent = document.getElementById('summary-content');
+
+        const sentimentIcon = data.sentiment === 'bullish' ? '📈' :
+            data.sentiment === 'bearish' ? '📉' : '➖';
+        const sentimentLabel = data.sentiment === 'bullish' ? 'Bullish' :
+            data.sentiment === 'bearish' ? 'Bearish' : 'Neutral';
+        const sentimentClass = data.sentiment || 'neutral';
+
+        summaryContent.innerHTML = `
+            <div class="ai-summary">
+                ${data.points?.map((point, index) => `
+                    <div class="summary-point">
+                        <span class="point-icon">${index + 1}️⃣</span>
+                        <span class="point-text">${point}</span>
+                    </div>
+                `).join('') || '<p>ไม่มีข้อมูลสรุป</p>'}
+            </div>
+            <div class="summary-sentiment">
+                <span class="sentiment-indicator">${sentimentIcon}</span>
+                <div class="sentiment-info">
+                    <span class="sentiment-label">Overall Sentiment</span>
+                    <span class="sentiment-value ${sentimentClass}">${sentimentLabel}</span>
+                </div>
+            </div>
+        `;
     }
 
     // ===================================

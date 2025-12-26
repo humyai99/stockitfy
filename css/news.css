@@ -579,3 +579,159 @@
         flex-shrink: 0;
     }
 }
+
+/* ===================================
+   AI Summary Section
+   =================================== */
+.ai-summary-section {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.1));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.summary-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--primary);
+}
+
+.close-summary-btn {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.close-summary-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--negative);
+}
+
+.summary-content {
+    line-height: 1.8;
+}
+
+.summary-content .ai-summary {
+    color: var(--text-secondary);
+}
+
+.summary-content .summary-point {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+}
+
+.summary-content .point-icon {
+    font-size: 1.1rem;
+}
+
+.summary-content .point-text {
+    flex: 1;
+    color: var(--text-secondary);
+}
+
+.summary-sentiment {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+}
+
+.sentiment-indicator {
+    font-size: 2rem;
+}
+
+.sentiment-info {
+    flex: 1;
+}
+
+.sentiment-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.sentiment-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 0.25rem;
+}
+
+.sentiment-value.bullish {
+    color: var(--positive);
+}
+
+.sentiment-value.bearish {
+    color: var(--negative);
+}
+
+.sentiment-value.neutral {
+    color: var(--warning);
+}
+
+/* AI Summary Button */
+.ai-summary-btn {
+    padding: 0.6rem 1.25rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent-secondary));
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.ai-summary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.ai-summary-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.header-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}

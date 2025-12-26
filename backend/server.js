@@ -1643,6 +1643,113 @@ app.get('/api/news/:symbol?', async (req, res) => {
 });
 
 // ===================================
+// AI News Summary API
+// ===================================
+app.get('/api/news/summarize/:symbol', async (req, res) => {
+    try {
+        const symbol = req.params.symbol || 'AAPL';
+        console.log(`[API] Generating AI summary for ${symbol}...`);
+
+        const cacheKey = `news_summary_${symbol}`;
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ ...cached, fromCache: true });
+        }
+
+        // Fetch news first
+        const searchResult = await yahooFinance.search(symbol, {
+            newsCount: 10
+        });
+
+        const news = searchResult.news || [];
+
+        if (news.length === 0) {
+            return res.json({
+                points: ['ไม่พบข่าวสำหรับหุ้นนี้'],
+                sentiment: 'neutral',
+                symbol
+            });
+        }
+
+        // Analyze headlines for key themes and sentiment
+        const headlines = news.map(n => n.title || '').filter(t => t);
+
+        // Keyword analysis
+        const bullishWords = ['surge', 'soar', 'jump', 'gain', 'rise', 'rally', 'beat', 'strong', 'growth', 'profit', 'upgrade', 'buy', 'bullish', 'record', 'high'];
+        const bearishWords = ['fall', 'drop', 'crash', 'decline', 'down', 'miss', 'weak', 'loss', 'concern', 'warning', 'downgrade', 'sell', 'bearish', 'low', 'cut'];
+
+        let bullishScore = 0;
+        let bearishScore = 0;
+
+        headlines.forEach(title => {
+            const lower = title.toLowerCase();
+            bullishWords.forEach(w => { if (lower.includes(w)) bullishScore++; });
+            bearishWords.forEach(w => { if (lower.includes(w)) bearishScore++; });
+        });
+
+        // Determine overall sentiment
+        let sentiment = 'neutral';
+        if (bullishScore > bearishScore + 2) sentiment = 'bullish';
+        else if (bearishScore > bullishScore + 2) sentiment = 'bearish';
+
+        // Generate summary points from headlines
+        const points = [];
+
+        // Add key themes based on headlines
+        const themes = {
+            earnings: headlines.filter(h => h.toLowerCase().match(/earning|revenue|profit|quarter|report/)).length,
+            price: headlines.filter(h => h.toLowerCase().match(/price|target|upgrade|downgrade|rating/)).length,
+            product: headlines.filter(h => h.toLowerCase().match(/launch|product|innovation|ai|chip/)).length,
+            market: headlines.filter(h => h.toLowerCase().match(/market|stock|investor|trading|shares/)).length
+        };
+
+        if (themes.earnings > 0) {
+            points.push(`มีข่าวเกี่ยวกับผลประกอบการ/รายได้ ${themes.earnings} ข่าว`);
+        }
+        if (themes.price > 0) {
+            points.push(`มีข่าวเกี่ยวกับราคาเป้าหมาย/การปรับเรทติ้ง ${themes.price} ข่าว`);
+        }
+        if (themes.product > 0) {
+            points.push(`มีข่าวเกี่ยวกับผลิตภัณฑ์/นวัตกรรม ${themes.product} ข่าว`);
+        }
+        if (themes.market > 0) {
+            points.push(`มีข่าวเกี่ยวกับภาพรวมตลาด ${themes.market} ข่าว`);
+        }
+
+        // Add sentiment summary
+        if (sentiment === 'bullish') {
+            points.push('📈 กระแสข่าวโดยรวมเป็นบวก มีแนวโน้มที่ดี');
+        } else if (sentiment === 'bearish') {
+            points.push('📉 กระแสข่าวโดยรวมเป็นลบ ควรระมัดระวัง');
+        } else {
+            points.push('➖ กระแสข่าวโดยรวมเป็นกลาง ไม่มีสัญญาณชัดเจน');
+        }
+
+        // Add latest headline
+        if (headlines.length > 0) {
+            points.push(`📰 ข่าวล่าสุด: ${headlines[0].substring(0, 80)}...`);
+        }
+
+        const result = {
+            symbol,
+            points,
+            sentiment,
+            newsCount: news.length,
+            bullishScore,
+            bearishScore,
+            timestamp: Date.now()
+        };
+
+        setCache(cacheKey, result);
+        res.json(result);
+
+    } catch (error) {
+        console.error('[API] News summary error:', error.message);
+        res.status(500).json({ error: 'Failed to generate news summary' });
+    }
+});
+
+// ===================================
 // AI Chatbot with OpenAI GPT
 // ===================================
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
@@ -1989,6 +2096,348 @@ app.get('/api/52week', async (req, res) => {
     } catch (error) {
         console.error('[API] 52-week error:', error.message);
         res.status(500).json({ error: 'Failed to fetch 52-week data' });
+    }
+});
+
+// ===================================
+// Technical Screener API
+// ===================================
+app.get('/api/technical-screener', async (req, res) => {
+    try {
+        const { rsi, macd, ma, volume } = req.query;
+        const cacheKey = `technical_${rsi}_${macd}_${ma}_${volume}`;
+
+        // Check cache
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ ...cached, fromCache: true });
+        }
+
+        console.log('[API] Running technical screener...');
+
+        // Common US stocks to scan
+        const symbols = [
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'TSLA', 'JPM',
+            'V', 'WMT', 'JNJ', 'PG', 'XOM', 'HD', 'MA', 'BAC', 'DIS', 'NFLX',
+            'ADBE', 'CRM', 'PYPL', 'INTC', 'AMD', 'CSCO', 'PEP', 'KO', 'MCD',
+            'NKE', 'COST', 'ABBV', 'TMO', 'AVGO', 'TXN', 'QCOM', 'UNH'
+        ];
+
+        const results = [];
+
+        // Fetch data for each symbol
+        for (const symbol of symbols) {
+            try {
+                // Get historical data for calculations
+                const queryOptions = {
+                    period1: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
+                    period2: new Date(),
+                    interval: '1d'
+                };
+
+                const chart = await yahooFinance.chart(symbol, queryOptions);
+
+                if (!chart || !chart.quotes || chart.quotes.length < 200) continue;
+
+                const quotes = chart.quotes;
+                const closes = quotes.map(q => q.close).filter(c => c != null);
+                const volumes = quotes.map(q => q.volume).filter(v => v != null);
+
+                if (closes.length < 200) continue;
+
+                // Calculate RSI (14 periods)
+                const rsiValue = calculateRSI(closes, 14);
+
+                // Calculate MACD
+                const macdData = calculateMACD(closes);
+
+                // Calculate SMAs
+                const sma50 = calculateSMA(closes, 50);
+                const sma200 = calculateSMA(closes, 200);
+
+                // Calculate average volume
+                const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
+                const currentVolume = volumes[volumes.length - 1];
+                const volumeRatio = currentVolume / avgVolume;
+
+                const currentPrice = closes[closes.length - 1];
+                const prevPrice = closes[closes.length - 2];
+                const change = currentPrice - prevPrice;
+                const changePercent = (change / prevPrice) * 100;
+
+                // Apply filters
+                let passesFilter = true;
+                const signals = [];
+
+                // RSI filter
+                if (rsi) {
+                    const rsiFilters = rsi.split(',');
+                    let rsiPass = false;
+                    if (rsiFilters.includes('oversold') && rsiValue < 30) {
+                        rsiPass = true;
+                        signals.push('RSI Oversold');
+                    }
+                    if (rsiFilters.includes('overbought') && rsiValue > 70) {
+                        rsiPass = true;
+                        signals.push('RSI Overbought');
+                    }
+                    if (rsiFilters.includes('neutral') && rsiValue >= 30 && rsiValue <= 70) {
+                        rsiPass = true;
+                    }
+                    if (!rsiPass && rsiFilters.length > 0) passesFilter = false;
+                }
+
+                // MACD filter
+                if (macd && passesFilter) {
+                    const macdFilters = macd.split(',');
+                    let macdPass = false;
+                    if (macdFilters.includes('bullish') && macdData.signal === 'bullish') {
+                        macdPass = true;
+                        signals.push('MACD Bullish');
+                    }
+                    if (macdFilters.includes('bearish') && macdData.signal === 'bearish') {
+                        macdPass = true;
+                        signals.push('MACD Bearish');
+                    }
+                    if (macdFilters.includes('crossover') && macdData.crossover) {
+                        macdPass = true;
+                        signals.push('MACD Crossover');
+                    }
+                    if (!macdPass && macdFilters.length > 0) passesFilter = false;
+                }
+
+                // MA filter
+                if (ma && passesFilter) {
+                    const maFilters = ma.split(',');
+                    let maPass = false;
+                    if (maFilters.includes('above_sma50') && currentPrice > sma50) {
+                        maPass = true;
+                        signals.push('Above SMA50');
+                    }
+                    if (maFilters.includes('above_sma200') && currentPrice > sma200) {
+                        maPass = true;
+                        signals.push('Above SMA200');
+                    }
+                    if (maFilters.includes('golden_cross') && sma50 > sma200) {
+                        maPass = true;
+                        signals.push('Golden Cross');
+                    }
+                    if (maFilters.includes('death_cross') && sma50 < sma200) {
+                        maPass = true;
+                        signals.push('Death Cross');
+                    }
+                    if (!maPass && maFilters.length > 0) passesFilter = false;
+                }
+
+                // Volume filter
+                if (volume && passesFilter) {
+                    const volFilters = volume.split(',');
+                    let volPass = false;
+                    if (volFilters.includes('high') && volumeRatio > 2) {
+                        volPass = true;
+                        signals.push('High Volume');
+                    }
+                    if (volFilters.includes('increasing') && currentVolume > volumes[volumes.length - 2]) {
+                        volPass = true;
+                        signals.push('Volume Up');
+                    }
+                    if (!volPass && volFilters.length > 0) passesFilter = false;
+                }
+
+                if (passesFilter) {
+                    results.push({
+                        symbol,
+                        name: chart.meta?.shortName || symbol,
+                        price: currentPrice,
+                        change,
+                        changePercent,
+                        rsi: rsiValue,
+                        macdSignal: macdData.signal,
+                        sma50,
+                        sma200,
+                        volumeRatio,
+                        signals
+                    });
+                }
+
+            } catch (err) {
+                console.log(`[Technical] Error for ${symbol}:`, err.message);
+            }
+        }
+
+        // Sort by RSI
+        results.sort((a, b) => a.rsi - b.rsi);
+
+        const result = {
+            results,
+            count: results.length,
+            timestamp: Date.now()
+        };
+
+        setCache(cacheKey, result);
+        res.json(result);
+
+    } catch (error) {
+        console.error('[API] Technical screener error:', error.message);
+        res.status(500).json({ error: 'Failed to run technical screener' });
+    }
+});
+
+// Calculate RSI
+function calculateRSI(prices, period = 14) {
+    if (prices.length < period + 1) return 50;
+
+    let gains = 0;
+    let losses = 0;
+
+    for (let i = prices.length - period; i < prices.length; i++) {
+        const change = prices[i] - prices[i - 1];
+        if (change > 0) gains += change;
+        else losses -= change;
+    }
+
+    const avgGain = gains / period;
+    const avgLoss = losses / period;
+
+    if (avgLoss === 0) return 100;
+    const rs = avgGain / avgLoss;
+    return 100 - (100 / (1 + rs));
+}
+
+// Calculate MACD
+function calculateMACD(prices) {
+    const ema12 = calculateEMA(prices, 12);
+    const ema26 = calculateEMA(prices, 26);
+    const macd = ema12 - ema26;
+
+    // Calculate signal line (9-day EMA of MACD)
+    const macdValues = [];
+    for (let i = 26; i <= prices.length; i++) {
+        const e12 = calculateEMA(prices.slice(0, i), 12);
+        const e26 = calculateEMA(prices.slice(0, i), 26);
+        macdValues.push(e12 - e26);
+    }
+
+    const signal = macdValues.length >= 9 ?
+        calculateEMA(macdValues.slice(-20), 9) : macd;
+
+    // Check for crossover
+    const prevMacd = macdValues.length > 1 ? macdValues[macdValues.length - 2] : macd;
+    const crossover = (prevMacd < signal && macd > signal) || (prevMacd > signal && macd < signal);
+
+    return {
+        macd,
+        signal: macd > signal ? 'bullish' : 'bearish',
+        crossover
+    };
+}
+
+// Calculate EMA
+function calculateEMA(prices, period) {
+    if (prices.length < period) return prices[prices.length - 1];
+
+    const multiplier = 2 / (period + 1);
+    let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+
+    for (let i = period; i < prices.length; i++) {
+        ema = (prices[i] - ema) * multiplier + ema;
+    }
+
+    return ema;
+}
+
+// Calculate SMA
+function calculateSMA(prices, period) {
+    if (prices.length < period) return prices[prices.length - 1];
+    const slice = prices.slice(-period);
+    return slice.reduce((a, b) => a + b, 0) / period;
+}
+
+// ===================================
+// Global Markets API
+// ===================================
+app.get('/api/global-markets', async (req, res) => {
+    try {
+        const cacheKey = 'global_markets';
+
+        // Check cache
+        const cached = getCached(cacheKey);
+        if (cached) {
+            return res.json({ ...cached, fromCache: true });
+        }
+
+        console.log('[API] Fetching global markets data...');
+
+        // Define all indices
+        const indices = {
+            americas: [
+                { symbol: '^GSPC', name: 'S&P 500', flag: '🇺🇸', country: 'USA' },
+                { symbol: '^DJI', name: 'Dow Jones', flag: '🇺🇸', country: 'USA' },
+                { symbol: '^IXIC', name: 'NASDAQ', flag: '🇺🇸', country: 'USA' },
+                { symbol: '^RUT', name: 'Russell 2000', flag: '🇺🇸', country: 'USA' }
+            ],
+            europe: [
+                { symbol: '^FTSE', name: 'FTSE 100', flag: '🇬🇧', country: 'UK' },
+                { symbol: '^GDAXI', name: 'DAX', flag: '🇩🇪', country: 'Germany' },
+                { symbol: '^FCHI', name: 'CAC 40', flag: '🇫🇷', country: 'France' },
+                { symbol: '^STOXX50E', name: 'Euro Stoxx 50', flag: '🇪🇺', country: 'Europe' }
+            ],
+            asia: [
+                { symbol: '^N225', name: 'Nikkei 225', flag: '🇯🇵', country: 'Japan' },
+                { symbol: '^HSI', name: 'Hang Seng', flag: '🇭🇰', country: 'Hong Kong' },
+                { symbol: '000001.SS', name: 'Shanghai', flag: '🇨🇳', country: 'China' },
+                { symbol: '^KS11', name: 'KOSPI', flag: '🇰🇷', country: 'Korea' },
+                { symbol: '^AXJO', name: 'ASX 200', flag: '🇦🇺', country: 'Australia' },
+                { symbol: '^BSESN', name: 'SENSEX', flag: '🇮🇳', country: 'India' }
+            ]
+        };
+
+        // Fetch all indices
+        const allSymbols = [
+            ...indices.americas.map(i => i.symbol),
+            ...indices.europe.map(i => i.symbol),
+            ...indices.asia.map(i => i.symbol)
+        ];
+
+        const quotes = await yahooFinance.quote(allSymbols);
+        const quotesMap = {};
+
+        if (Array.isArray(quotes)) {
+            quotes.forEach(q => {
+                if (q) quotesMap[q.symbol] = q;
+            });
+        }
+
+        // Process each region
+        const processRegion = (regionIndices) => {
+            return regionIndices.map(index => {
+                const quote = quotesMap[index.symbol];
+                return {
+                    symbol: index.symbol,
+                    name: index.name,
+                    flag: index.flag,
+                    country: index.country,
+                    price: quote?.regularMarketPrice || 0,
+                    change: quote?.regularMarketChange || 0,
+                    changePercent: quote?.regularMarketChangePercent || 0,
+                    volume: quote?.regularMarketVolume || 0
+                };
+            });
+        };
+
+        const result = {
+            americas: processRegion(indices.americas),
+            europe: processRegion(indices.europe),
+            asia: processRegion(indices.asia),
+            timestamp: Date.now()
+        };
+
+        setCache(cacheKey, result);
+        res.json(result);
+
+    } catch (error) {
+        console.error('[API] Global markets error:', error.message);
+        res.status(500).json({ error: 'Failed to fetch global markets data' });
     }
 });
 

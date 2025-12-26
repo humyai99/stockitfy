@@ -34,10 +34,9 @@
                 <a href="index.html" class="nav-link">แดชบอร์ด</a>
                 <a href="analyzer.html" class="nav-link">วิเคราะห์ AI</a>
                 <a href="screener.html" class="nav-link">Screener</a>
+                <a href="global-markets.html" class="nav-link">Global</a>
+                <a href="technical.html" class="nav-link">Technical</a>
                 <a href="dividend.html" class="nav-link">Dividend</a>
-                <a href="sector-flows.html" class="nav-link">Sector</a>
-                <a href="52week.html" class="nav-link">52-Week</a>
-                <a href="earnings.html" class="nav-link">Earnings</a>
                 <a href="news.html" class="nav-link active">ข่าว</a>
                 <a href="chatbot.html" class="nav-link">AI Chat</a>
             </nav>
@@ -49,7 +48,7 @@
             </button>
 
             <div class="header-right">
-                    <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="สลับ Theme">☀️</button>
+                <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="สลับ Theme">☀️</button>
                 <div class="connection-status" id="connection-status">
                     <span class="status-dot"></span>
                     <span class="status-text">Connected</span>
@@ -112,11 +111,28 @@
                 </div>
             </section>
 
+            <!-- AI Summary Section -->
+            <section class="ai-summary-section" id="ai-summary-section" style="display: none;">
+                <div class="summary-header">
+                    <h2>🤖 AI สรุปข่าว</h2>
+                    <button class="close-summary-btn" id="close-summary-btn">×</button>
+                </div>
+                <div class="summary-content" id="summary-content">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <span>AI กำลังวิเคราะห์ข่าว...</span>
+                    </div>
+                </div>
+            </section>
+
             <!-- News List -->
             <section class="news-section">
                 <div class="section-header">
                     <h2 id="news-title">📋 ข่าว AAPL</h2>
-                    <span class="last-update" id="last-update">อัปเดต: -</span>
+                    <div class="header-actions-row">
+                        <button class="ai-summary-btn" id="ai-summary-btn">🤖 AI สรุปข่าว</button>
+                        <span class="last-update" id="last-update">อัปเดต: -</span>
+                    </div>
                 </div>
 
                 <div class="news-grid" id="news-grid">

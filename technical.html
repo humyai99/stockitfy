@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stockify Pro AI | Technical Screener</title>
+    <meta name="description" content="กรองหุ้นด้วย Technical Indicators - RSI, MACD, Moving Averages">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/technical.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="js/theme.js"></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-left">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">📈</span>
+                    <span class="logo-text">Stockify<span class="logo-accent">Pro</span></span>
+                </a>
+            </div>
+
+            <nav class="header-nav" id="nav-tabs">
+                <a href="index.html" class="nav-link">แดชบอร์ด</a>
+                <a href="analyzer.html" class="nav-link">วิเคราะห์ AI</a>
+                <a href="screener.html" class="nav-link">Screener</a>
+                <a href="global-markets.html" class="nav-link">Global</a>
+                <a href="technical.html" class="nav-link active">Technical</a>
+                <a href="dividend.html" class="nav-link">Dividend</a>
+                <a href="news.html" class="nav-link">ข่าว</a>
+                <a href="chatbot.html" class="nav-link">AI Chat</a>
+            </nav>
+
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="header-right">
+                <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="สลับ Theme">☀️</button>
+                <div class="connection-status" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connected</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="technical-main">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>📊 Technical Screener</h1>
+                    <p class="page-subtitle">กรองหุ้นด้วย Technical Indicators - RSI, MACD, Moving Averages</p>
+                </div>
+                <div class="header-actions">
+                    <button class="scan-btn" id="scan-btn">🔍 Scan หุ้น</button>
+                    <span class="last-update" id="last-update">อัปเดต: -</span>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <section class="filters-section">
+                <div class="section-header">
+                    <h2>⚙️ Filter Conditions</h2>
+                    <button class="reset-btn" id="reset-btn">🔄 Reset</button>
+                </div>
+
+                <div class="filters-grid">
+                    <!-- RSI Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">📉</span>
+                            <span class="filter-name">RSI (14)</span>
+                        </div>
+                        <div class="filter-options">
+                            <label class="filter-option">
+                                <input type="checkbox" name="rsi" value="oversold">
+                                <span class="option-label">Oversold (&lt;30)</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="rsi" value="neutral">
+                                <span class="option-label">Neutral (30-70)</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="rsi" value="overbought">
+                                <span class="option-label">Overbought (&gt;70)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- MACD Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">〰️</span>
+                            <span class="filter-name">MACD</span>
+                        </div>
+                        <div class="filter-options">
+                            <label class="filter-option">
+                                <input type="checkbox" name="macd" value="bullish">
+                                <span class="option-label">Bullish (MACD &gt; Signal)</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="macd" value="bearish">
+                                <span class="option-label">Bearish (MACD &lt; Signal)</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="macd" value="crossover">
+                                <span class="option-label">Crossover</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Moving Average Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">📈</span>
+                            <span class="filter-name">Moving Averages</span>
+                        </div>
+                        <div class="filter-options">
+                            <label class="filter-option">
+                                <input type="checkbox" name="ma" value="above_sma50">
+                                <span class="option-label">Price &gt; SMA(50)</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="ma" value="above_sma200">
+                                <span class="option-label">Price &gt; SMA(200)</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="ma" value="golden_cross">
+                                <span class="option-label">Golden Cross</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="ma" value="death_cross">
+                                <span class="option-label">Death Cross</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Volume Filter -->
+                    <div class="filter-card">
+                        <div class="filter-header">
+                            <span class="filter-icon">📊</span>
+                            <span class="filter-name">Volume</span>
+                        </div>
+                        <div class="filter-options">
+                            <label class="filter-option">
+                                <input type="checkbox" name="volume" value="high">
+                                <span class="option-label">Volume &gt; 2x Avg</span>
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" name="volume" value="increasing">
+                                <span class="option-label">Volume เพิ่มขึ้น</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="presets-section">
+                    <span class="presets-label">🎯 Quick Presets:</span>
+                    <div class="presets-buttons">
+                        <button class="preset-btn" data-preset="bullish">📈 Bullish Setup</button>
+                        <button class="preset-btn" data-preset="bearish">📉 Bearish Setup</button>
+                        <button class="preset-btn" data-preset="oversold">🔥 Oversold Bounce</button>
+                        <button class="preset-btn" data-preset="breakout">🚀 Breakout</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section">
+                <div class="section-header">
+                    <h2>📋 Results <span id="result-count">(0)</span></h2>
+                    <div class="sort-options">
+                        <select id="sort-select" class="sort-select">
+                            <option value="symbol">Sort: Symbol</option>
+                            <option value="rsi">Sort: RSI</option>
+                            <option value="change">Sort: Change %</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="results-grid" id="results-grid">
+                    <div class="empty-state">
+                        <span class="empty-icon">🔍</span>
+                        <p>เลือก Filter แล้วกด "Scan หุ้น" เพื่อค้นหา</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Disclaimer -->
+            <div class="disclaimer">
+                <p>⚠️ <strong>หมายเหตุ:</strong> Technical Indicators มีไว้เพื่อการศึกษา ไม่ใช่คำแนะนำการลงทุน</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/technical.js"></script>
+
+    <!-- Bottom Mobile Navigation -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-container">
+            <a href="index.html" class="bottom-nav-item">
+                <span class="nav-icon">📊</span>
+                <span>หน้าหลัก</span>
+            </a>
+            <a href="global-markets.html" class="bottom-nav-item">
+                <span class="nav-icon">🌍</span>
+                <span>Global</span>
+            </a>
+            <a href="screener.html" class="bottom-nav-item">
+                <span class="nav-icon">🔍</span>
+                <span>Screener</span>
+            </a>
+            <a href="technical.html" class="bottom-nav-item active">
+                <span class="nav-icon">📈</span>
+                <span>Technical</span>
+            </a>
+            <a href="chatbot.html" class="bottom-nav-item">
+                <span class="nav-icon">💬</span>
+                <span>Chat</span>
+            </a>
+        </div>
+    </nav>
+</body>
+
+</html>
